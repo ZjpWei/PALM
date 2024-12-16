@@ -1,4 +1,4 @@
-# Microbiome-Metabolite data analysis
+# Microbiome-Metabolite Data Analysis
 
 ## 1. Prepare Analysis Data
 
