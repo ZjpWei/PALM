@@ -1,5 +1,5 @@
 # =============================================== #
-# (3) Analyze microbiome-metabolite data (other)  #
+# (3) Analyze microbiome-metabolome data (other)  #
 # =============================================== #
 
   # Packages ----
@@ -14,6 +14,9 @@
 
   ## Load data
   load("./Metabolites/Processed_data/processed_data.Rdata")
+  load("./Metabolites/Output/PALM_null.Rdata")
+  source("./utility/ancombc.R")
+
   cluster <- lapply(metadata, function(d){
     d <- d %>% dplyr::transmute(Sample, Subject) %>% data.frame()
     rownames(d) <- NULL
@@ -76,7 +79,6 @@
     ## Calculate FDR
     pval.sin <- 1 - pchisq(q.coef, df = 1)
     tmp.pval <- NULL
-    tmp.I2 <- NULL
     for(k in 1:nrow(AA.est)){
       nonna.id <- !is.na(AA.est[k,])
       m <- try(metafor::rma(yi = AA.est[k,nonna.id], vi = AA.var[k,nonna.id],
@@ -98,26 +100,22 @@
     ## ANCOM-BC2
     ANCOMBC2.meta.pval <- data.frame(feature = Genera.id)
     ANCOMBC2.meta.pval.het <- data.frame(feature = Genera.id)
-    ANCOMBC2.meta.I2 <- data.frame(feature = Genera.id)
     ANCOMBC2.meta.coef <- data.frame(feature = Genera.id)
 
     ## MaAsLin2
     Maaslin2.meta.pval <- data.frame(feature = Genera.id)
     Maaslin2.meta.pval.het <- data.frame(feature = Genera.id)
-    Maaslin2.meta.I2 <- data.frame(feature = Genera.id)
     Maaslin2.meta.coef <- data.frame(feature = Genera.id)
 
     ## LM-CLR
     LMCLR.meta.pval <- data.frame(feature = Genera.id)
     LMCLR.meta.pval.het <- data.frame(feature = Genera.id)
     LMCLR.meta.coef <- data.frame(feature = Genera.id)
-    LMCLR.meta.I2 <- data.frame(feature = Genera.id)
 
     ## LinDA
     Linda.meta.pval <- data.frame(feature = Genera.id)
     Linda.meta.pval.het <- data.frame(feature = Genera.id)
     Linda.meta.coef <- data.frame(feature = Genera.id)
-    Linda.meta.I2 <- data.frame(feature = Genera.id)
 
     ## ANCOM-BC2
     ANCOMBC2.est <- matrix(NA, nrow = length(Genera.id), ncol = length(datasets),
@@ -203,10 +201,10 @@
 
             inormal <- apply(clrx_Z, 2, function(d){
               data.d <- data.frame(meta.data, d = d)
-              lm.fit <- lm(labels ~ d, data = data.d)
+              lm.fit <- lm(d ~ labels, data = data.d)
               sum.fit <- summary(lm.fit)
-              if("d" %in% rownames(sum.fit$coefficients)){
-                return(sum.fit$coefficients["d",c("Estimate", "Std. Error")])
+              if("labels" %in% rownames(sum.fit$coefficients)){
+                return(sum.fit$coefficients["labels", c("Estimate", "Std. Error")])
               }else{
                 return(c(NA, NA))
               }
@@ -252,10 +250,10 @@
 
             inormal <- apply(clrx_Z, 2, function(d){
               data.d <- data.frame(meta.data, d = d)
-              lm.fit <- lm(labels ~ d + Study.Group, data = data.d)
+              lm.fit <- lm(d ~ labels + Study.Group, data = data.d)
               sum.fit <- summary(lm.fit)
-              if("d" %in% rownames(sum.fit$coefficients)){
-                return(sum.fit$coefficients["d",c("Estimate", "Std. Error")])
+              if("labels" %in% rownames(sum.fit$coefficients)){
+                return(sum.fit$coefficients["labels",c("Estimate", "Std. Error")])
               }else{
                 return(c(NA, NA))
               }
@@ -303,10 +301,10 @@
 
             inormal <- apply(clrx_Z, 2, function(d){
               data.d <- data.frame(meta.data, d = d)
-              lm.fit <- lme4::lmer(labels ~ d + (1 | Subject), data = data.d)
+              lm.fit <- lme4::lmer(d ~ labels + (1 | Subject), data = data.d)
               sum.fit <- summary(lm.fit)
-              if("d" %in% rownames(sum.fit$coefficients)){
-                return(sum.fit$coefficients["d",c("Estimate", "Std. Error")])
+              if("labels" %in% rownames(sum.fit$coefficients)){
+                return(sum.fit$coefficients["labels",c("Estimate", "Std. Error")])
               }else{
                 return(c(NA, NA))
               }
@@ -352,10 +350,10 @@
 
             inormal <- apply(clrx_Z, 2, function(d){
               data.d <- data.frame(meta.data, d = d)
-              lm.fit <- lme4::lmer(labels ~ d + (1 | Subject) + Study.Group, data = data.d)
+              lm.fit <- lme4::lmer(d ~ labels + (1 | Subject) + Study.Group, data = data.d)
               sum.fit <- summary(lm.fit)
-              if("d" %in% rownames(sum.fit$coefficients)){
-                return(sum.fit$coefficients["d",c("Estimate", "Std. Error")])
+              if("labels" %in% rownames(sum.fit$coefficients)){
+                return(sum.fit$coefficients["labels",c("Estimate", "Std. Error")])
               }else{
                 return(c(NA, NA))
               }
