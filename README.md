@@ -1,4 +1,4 @@
-# Melody analysis
+# PALM analysis
 
 ## Introduction
 
