@@ -10,4 +10,4 @@ Execute `2.Simulation_longitudinal.R` to obtain the analysis results for `PALM` 
 
 ## 3. Poisson-like methods simluation analysis
 
-Execute `2.Simulation_Poisson.R` to obtain the analysis results for `PALM` and Poisson-like methods using simulated independent data.
+Execute `3.Simulation_Poisson.R` to obtain the analysis results for `PALM` and Poisson-like methods using simulated independent data.
