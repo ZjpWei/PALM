@@ -14,7 +14,7 @@
   L <- length(data.rel)
 
   ## Align figures
-  pdf("./Figure/Figure_rel_b.pdf", width = 12.45, height = 3.13, bg = "white")
+  pdf("./Figure/Figure_CRC_b.pdf", width = 12.45, height = 3.13, bg = "white")
 
   par(mfrow = c(1, 4), mar = c(2, 2, 2, 0.2), oma = c(0, 0, 0, 0))
 
