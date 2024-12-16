@@ -87,7 +87,7 @@
 
   ANCOMBC2.res <- data.frame(features = rownames(AA.est),
                              est = meta.coef,
-                             var = meta.var,
+                             stderr = sqrt(meta.var),
                              pval = pval.sin,
                              qval = qval.sin,
                              het.pval = tmp.pval,
@@ -96,24 +96,37 @@
   ANCOMBC2.model <- list(est = AA.est, var = AA.var)
 
   ## MaAsLin2
-  source("./utility/Maaslin2.R")
-
   AA.est <- matrix(NA, nrow = length(feature.ID), ncol = L,
                    dimnames = list(feature.ID, as.character(1:L)))
   AA.var <- matrix(NA, nrow = length(feature.ID), ncol = L,
                    dimnames = list(feature.ID, as.character(1:L)))
 
-  ## MaAsLin2 model
-  Maaslin2.model <- Maaslin2_meta(feature.table = feature.table,
-                                  meta.data = meta.data,
-                                  fixed_effects = "labels",
-                                  random_effects = NULL,
-                                  study = "study",
-                                  rma.method = "EE")
-
   for(l in 1:L){
-    AA.est[Maaslin2.model$Maaslin2.lst[[l]]$feature,l] <- Maaslin2.model$Maaslin2.lst[[l]]$coef
-    AA.var[Maaslin2.model$Maaslin2.lst[[l]]$feature,l] <- (Maaslin2.model$Maaslin2.lst[[l]]$stderr)^2
+    data.tmp <- feature.table[,meta.data$study == l]
+    data.tmp <- data.tmp[rowSums(data.tmp) > 0,]
+    taxa.id <- rownames(data.tmp)
+    rownames(data.tmp) <- paste0("Tax", 1:length(taxa.id))
+    res <- Maaslin2::Maaslin2(input_data = data.tmp,
+                              input_metadata = meta.data[meta.data$study == l,],
+                              output = "./",
+                              min_abundance = 0,
+                              min_prevalence = 0,
+                              normalization = "TSS",
+                              transform = "AST",
+                              analysis_method = "LM",
+                              max_significance = 1,
+                              random_effects = NULL,
+                              fixed_effects = "labels",
+                              standardize = FALSE,
+                              plot_heatmap = FALSE,
+                              plot_scatter = FALSE)
+
+    res.tmp <- res$result[res$results$metadata == "labels",]
+    res.tmp <- res.tmp[order(as.numeric(sapply(strsplit(res.tmp$feature, split = "Tax"), "[[", 2, simplify = TRUE))),]
+    res.tmp$feature <- taxa.id
+
+    AA.est[res.tmp$feature,l] <- res.tmp$coef
+    AA.var[res.tmp$feature,l] <- (res.tmp$stderr)^2
   }
 
   ## Calculate FDR
@@ -139,7 +152,7 @@
 
   Maaslin2.res <- data.frame(features = rownames(AA.est),
                              est = meta.coef,
-                             var = meta.var,
+                             stderr = sqrt(meta.var),
                              pval = pval.sin,
                              qval = qval.sin,
                              het.pval = tmp.pval,
@@ -154,16 +167,17 @@
                    dimnames = list(feature.ID, as.character(1:L)))
 
   for(l in 1:L){
-    tmp.data <- (data.rel[[l]]$Y)[,colSums(data.rel[[l]]$Y)!=0]
-    Z.pool <- log(tmp.data + 0.5)
+    data.tmp <- feature.table[,meta.data$study == l]
+    data.tmp <- data.tmp[rowSums(data.tmp) > 0,]
+    Z.pool <- log(t(data.tmp) + 0.5)
     clrx_Z <- apply(Z.pool, 2, function(x) x - rowMeans(Z.pool))
 
     inormal <- apply(clrx_Z, 2, function(d){
-      data.d <- data.frame(X = data.rel[[l]]$X, d = d)
-      lm.fit <- lm(X ~ d, data = data.d)
+      data.d <- data.frame(labels = meta.data$labels[meta.data$study == l], d = d)
+      lm.fit <- lm(d ~ labels, data = data.d)
       sum.fit <- summary(lm.fit)
-      if("d" %in% rownames(sum.fit$coefficients)){
-        return(sum.fit$coefficients["d",c("Estimate", "Std. Error")])
+      if("labels1" %in% rownames(sum.fit$coefficients)){
+        return(sum.fit$coefficients["labels1",c("Estimate", "Std. Error")])
       }else{
         return(c(NA, NA))
       }
@@ -196,7 +210,7 @@
 
   lmclr.res <- data.frame(features = rownames(AA.est),
                           est = meta.coef,
-                          var = meta.var,
+                          stderr = sqrt(meta.var),
                           pval = pval.sin,
                           qval = qval.sin,
                           het.pval = tmp.pval,
@@ -211,9 +225,12 @@
                    dimnames = list(feature.ID, as.character(1:L)))
 
   for(l in 1:L){
-    Linda.model <- MicrobiomeStat::linda(feature.dat = t(data.rel[[l]]$Y),
+    data.tmp <- feature.table[,meta.data$study == l]
+    data.tmp <- data.tmp[rowSums(data.tmp) > 0,]
+
+    Linda.model <- MicrobiomeStat::linda(feature.dat = data.tmp,
                                          meta.dat = meta.data %>% dplyr::filter(study == l),
-                                         formula = paste0('~labels'),
+                                         formula = '~labels',
                                          feature.dat.type = "count",
                                          prev.filter = 0,
                                          adaptive = TRUE,
@@ -246,7 +263,7 @@
 
   Linda.res <- data.frame(features = rownames(AA.est),
                           est = meta.coef,
-                          var = meta.var,
+                          stderr = sqrt(meta.var),
                           pval = pval.sin,
                           qval = qval.sin,
                           het.pval = tmp.pval,
