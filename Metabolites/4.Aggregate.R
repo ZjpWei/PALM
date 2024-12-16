@@ -26,9 +26,9 @@
       ANCOMBC2.meta.pval.het.all <- ANCOMBC2.meta.pval.het
 
       ## LM-INT
-      LMCLR.meta.coef.all <- LMINT.meta.coef
-      LMCLR.meta.pval.all <- LMINT.meta.pval
-      LMCLR.meta.pval.het.all <- LMINT.meta.pval.het
+      LMCLR.meta.coef.all <- LMCLR.meta.coef
+      LMCLR.meta.pval.all <- LMCLR.meta.pval
+      LMCLR.meta.pval.het.all <- LMCLR.meta.pval.het
 
       ## Linda
       Linda.meta.coef.all <- Linda.meta.coef
@@ -50,11 +50,11 @@
 
       ## LM-INT
       LMCLR.meta.coef.all <- LMCLR.meta.coef.all %>%
-        dplyr::left_join(LMINT.meta.coef, by = "feature")
+        dplyr::left_join(LMCLR.meta.coef, by = "feature")
       LMCLR.meta.pval.all <- LMCLR.meta.pval.all %>%
-        dplyr::left_join(LMINT.meta.pval, by = "feature")
+        dplyr::left_join(LMCLR.meta.pval, by = "feature")
       LMCLR.meta.pval.het.all <- LMCLR.meta.pval.het.all %>%
-        dplyr::left_join(LMINT.meta.pval.het, by = "feature")
+        dplyr::left_join(LMCLR.meta.pval.het, by = "feature")
 
       ## Linda
       Linda.meta.coef.all <- Linda.meta.coef.all %>%
@@ -74,7 +74,7 @@
     }
     rm(list = c("ANCOMBC2.meta.coef", "ANCOMBC2.meta.pval", "ANCOMBC2.meta.pval.het",
                 "Linda.meta.coef", "Linda.meta.pval", "Linda.meta.pval.het",
-                "LMINT.meta.coef", "LMINT.meta.pval", "LMINT.meta.pval.het",
+                "LMCLR.meta.coef", "LMCLR.meta.pval", "LMCLR.meta.pval.het",
                 "Maaslin2.meta.coef", "Maaslin2.meta.pval", "Maaslin2.meta.pval.het"))
   }
 
@@ -103,3 +103,4 @@
        LMCLR.meta.pval.het, LMCLR.meta.pval, LMCLR.meta.coef,
        Maaslin2.meta.pval.het, Maaslin2.meta.pval, Maaslin2.meta.coef,
        file = "./Metabolites/Output/MTBL_others.Rdata")
+
