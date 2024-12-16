@@ -1,5 +1,5 @@
 # =============================================== #
-#   (2) Analyze microbiome-metabolite data (PALM) #
+#   (2) Analyze microbiome-metabolome data (PALM) #
 # =============================================== #
 
   # Packages ----
@@ -83,6 +83,8 @@
 
   # PALM meta-analysis
   null.obj <- palm.null.model(rel.abd = otu_data_lst, covariate.adjust = covariates_adjust_lst)
+
+  save(null.obj, file = "./Metabolites/Output/PALM_null.Rdata")
 
   summary.stat.study.all <- palm.get.summary(null.obj = null.obj, covariate.interest = cmpd_data_lst,
                                              cluster = cluster_data_lst)
