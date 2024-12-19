@@ -68,7 +68,7 @@
   }
 
   ## function
-  meta_analysis <- function(AA.est, AA.var, rm.method = "EE"){
+   meta_analysis <- function(AA.est, AA.var, rm.method = "EE"){
     ## Combined statistics
     est.statics <- rowSums(AA.est / AA.var, na.rm = TRUE)
     var.statics <- rowSums(1 / AA.var, na.rm = TRUE)
@@ -90,7 +90,8 @@
       }
     }
 
-    combined.model <- data.frame(feature = Genera.id, pval = pval.sin, pval.het = tmp.pval, coef = meta.coef)
+    combined.model <- data.frame(feature = Genera.id, pval = pval.sin, pval.het = tmp.pval,
+                                 coef = meta.coef, sd = sqrt(meta.var))
 
     return(combined.model)
   }
