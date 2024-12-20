@@ -1,4 +1,4 @@
-# PALM analysis
+# PALM Analysis
 
 ## Introduction
 
