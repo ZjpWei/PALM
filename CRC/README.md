@@ -1,9 +1,9 @@
 # Analysis for CRC Data
 
-## 1. Prepare analysis data
+## 1. Prepare Analysis Data
 
-Execute `1.Prepare_data.R` for setup.
+Run `1.Prepare_data.R` to set up the analysis data.
 
-## 2. Analyze original data
+## 2. Analyze Original Data
 
-Execute `2.Analysis_org.R` to analyze CRC data by `PALM` and other compared methods.
+Run `2.Analysis_org.R` to analyze the CRC data using PALM and other comparison methods.
