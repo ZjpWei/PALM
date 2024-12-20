@@ -3,12 +3,8 @@
 # =============================================== #
 
   # Packages ----
-  library("coin")
-  library("purrr")
   library('tidyverse')
-  library('glmnet')
-  library("ANCOMBC")
-  library("Maaslin2")
+  library('PALM')
 
   rm(list = ls())
 
@@ -81,6 +77,9 @@
   }
   covariates_adjust_lst$POYET_BIO_ML_2019 <- NULL
 
+  ## Save preprocessing
+  save.image("./Metabolites/Processed_data/MTBL.RData")
+
   # PALM meta-analysis
   null.obj <- palm.null.model(rel.abd = otu_data_lst, covariate.adjust = covariates_adjust_lst)
 
@@ -91,12 +90,13 @@
 
   PALM.test <- palm.test(summary.stats = summary.stat.study.all, p.adjust.method = "fdr")
 
-  # PALM model
+  # PALM model ----
   PALM.meta.pval <- data.frame(feature = Genera.id)
   PALM.meta.pval.het <- data.frame(feature = Genera.id)
   PALM.meta.coef <- data.frame(feature = Genera.id)
-  for(cmpds.id in Metabolite.ids){
+  PALM.meta.sd <- data.frame(feature = Genera.id)
 
+  for(cmpds.id in Metabolite.ids){
     PALM.est <- matrix(NA, nrow = length(Genera.id), ncol = length(datasets),
                      dimnames = list(Genera.id, datasets))
     PALM.var <- matrix(NA, nrow = length(Genera.id), ncol = length(datasets),
@@ -111,7 +111,8 @@
 
     ## Calculate FDR
     meta.coef <- PALM.test[[cmpds.id]]$meta_fits$coef
-    pval.sin <-PALM.test[[cmpds.id]]$meta_fits$pval
+    meta.sd <- PALM.test[[cmpds.id]]$meta_fits$stderr
+    pval.sin <- PALM.test[[cmpds.id]]$meta_fits$pval
     tmp.pval <- NULL
     for(k in 1:nrow(PALM.est)){
       nonna.id <- !is.na(PALM.est[k,])
@@ -124,7 +125,8 @@
       }
     }
 
-    PALM.model <- data.frame(feature = Genera.id, pval = pval.sin, pval.het = tmp.pval, coef = meta.coef)
+    PALM.model <- data.frame(feature = Genera.id, pval = pval.sin, pval.het = tmp.pval,
+                             coef = meta.coef, sd = meta.sd)
 
     PALM.meta.pval <- PALM.meta.pval %>%
       dplyr::left_join(PALM.model %>%
@@ -141,8 +143,14 @@
                          dplyr::transmute(feature, coef) %>%
                          dplyr::rename_with(~cmpds.id, coef), by = "feature")
 
+    PALM.meta.sd <- PALM.meta.sd %>%
+      dplyr::left_join(PALM.model %>%
+                         dplyr::transmute(feature, sd) %>%
+                         dplyr::rename_with(~cmpds.id, sd), by = "feature")
+
   }
 
-  save(PALM.meta.pval, PALM.meta.pval.het, PALM.meta.coef, PALM.est, PALM.var, PALM.test,
+  save(PALM.meta.pval, PALM.meta.pval.het, PALM.meta.coef, PALM.meta.sd,
+       PALM.est, PALM.var, PALM.test,
        file = "./Metabolites/Output/MTBL_PALM.Rdata")
 

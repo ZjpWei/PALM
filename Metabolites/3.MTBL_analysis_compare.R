@@ -68,7 +68,7 @@
   }
 
   ## function
-   meta_analysis <- function(AA.est, AA.var, rm.method = "EE"){
+  meta_analysis <- function(AA.est, AA.var, rm.method = "EE"){
     ## Combined statistics
     est.statics <- rowSums(AA.est / AA.var, na.rm = TRUE)
     var.statics <- rowSums(1 / AA.var, na.rm = TRUE)
@@ -102,21 +102,25 @@
     ANCOMBC2.meta.pval <- data.frame(feature = Genera.id)
     ANCOMBC2.meta.pval.het <- data.frame(feature = Genera.id)
     ANCOMBC2.meta.coef <- data.frame(feature = Genera.id)
+    ANCOMBC2.meta.sd <- data.frame(feature = Genera.id)
 
     ## MaAsLin2
     Maaslin2.meta.pval <- data.frame(feature = Genera.id)
     Maaslin2.meta.pval.het <- data.frame(feature = Genera.id)
     Maaslin2.meta.coef <- data.frame(feature = Genera.id)
+    Maaslin2.meta.sd <- data.frame(feature = Genera.id)
 
     ## LM-CLR
     LMCLR.meta.pval <- data.frame(feature = Genera.id)
     LMCLR.meta.pval.het <- data.frame(feature = Genera.id)
     LMCLR.meta.coef <- data.frame(feature = Genera.id)
+    LMCLR.meta.sd <- data.frame(feature = Genera.id)
 
     ## LinDA
     Linda.meta.pval <- data.frame(feature = Genera.id)
     Linda.meta.pval.het <- data.frame(feature = Genera.id)
     Linda.meta.coef <- data.frame(feature = Genera.id)
+    Linda.meta.sd <- data.frame(feature = Genera.id)
 
     ## ANCOM-BC2
     ANCOMBC2.est <- matrix(NA, nrow = length(Genera.id), ncol = length(datasets),
@@ -419,6 +423,11 @@
                          dplyr::transmute(feature, coef) %>%
                          dplyr::rename_with(~cmpds.id, coef), by = "feature")
 
+    ANCOMBC2.meta.sd <- ANCOMBC2.meta.sd %>%
+      dplyr::left_join(ANCOMBC2.model %>%
+                         dplyr::transmute(feature, sd) %>%
+                         dplyr::rename_with(~cmpds.id, sd), by = "feature")
+
     ## Maaslin2
     Maaslin2.meta.pval <- Maaslin2.meta.pval %>%
       dplyr::left_join(Maaslin2.model %>%
@@ -434,6 +443,11 @@
       dplyr::left_join(Maaslin2.model %>%
                          dplyr::transmute(feature, coef) %>%
                          dplyr::rename_with(~cmpds.id, coef), by = "feature")
+
+    Maaslin2.meta.sd <- Maaslin2.meta.sd %>%
+      dplyr::left_join(Maaslin2.model %>%
+                         dplyr::transmute(feature, sd) %>%
+                         dplyr::rename_with(~cmpds.id, sd), by = "feature")
 
     ## LM-CLR
     LMCLR.meta.pval <- LMCLR.meta.pval %>%
@@ -451,6 +465,11 @@
                          dplyr::transmute(feature, coef) %>%
                          dplyr::rename_with(~cmpds.id, coef), by = "feature")
 
+    LMCLR.meta.sd <- LMCLR.meta.sd %>%
+      dplyr::left_join(LMCLR.model %>%
+                         dplyr::transmute(feature, sd) %>%
+                         dplyr::rename_with(~cmpds.id, sd), by = "feature")
+
     ## LinDA
     Linda.meta.pval <- Linda.meta.pval %>%
       dplyr::left_join(Linda.model %>%
@@ -467,11 +486,16 @@
                          dplyr::transmute(feature, coef) %>%
                          dplyr::rename_with(~cmpds.id, coef), by = "feature")
 
+    Linda.meta.sd <- Linda.meta.sd %>%
+      dplyr::left_join(Linda.model %>%
+                         dplyr::transmute(feature, sd) %>%
+                         dplyr::rename_with(~cmpds.id, sd), by = "feature")
+
     ## Save data
-    save(ANCOMBC2.meta.pval.het, ANCOMBC2.meta.pval, ANCOMBC2.meta.coef,
-         Maaslin2.meta.pval.het, Maaslin2.meta.pval, Maaslin2.meta.coef,
-         LMCLR.meta.pval.het, LMCLR.meta.pval, LMCLR.meta.coef,
-         Linda.meta.pval.het, Linda.meta.pval, Linda.meta.coef,
+    save(ANCOMBC2.meta.pval.het, ANCOMBC2.meta.pval, ANCOMBC2.meta.coef, ANCOMBC2.meta.sd,
+         Maaslin2.meta.pval.het, Maaslin2.meta.pval, Maaslin2.meta.coef, Maaslin2.meta.sd,
+         LMCLR.meta.pval.het, LMCLR.meta.pval, LMCLR.meta.coef, LMCLR.meta.sd,
+         Linda.meta.pval.het, Linda.meta.pval, Linda.meta.coef, Linda.meta.sd,
 
          ANCOMBC2.est, ANCOMBC2.var,
          Maaslin2.est, Maaslin2.var,
@@ -479,4 +503,6 @@
          LinDA.est, LinDA.var,
          file = paste0("./Metabolites/Output/Metabolites/Compare_method_", cmpds.id, ".Rdata"))
   }
+
+
 
