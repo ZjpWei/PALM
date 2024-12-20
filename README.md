@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project contains the analyses for the `PALM` paper. Please refer to the README.md file in each folder to reproduce the real data analysis, simulations, and figures.
+This project contains the analyses for the `PALM` paper. Please refer to the `README.md` file in each folder to reproduce the real data analysis, simulations, and figures.
 
 ## References
 
