@@ -1,13 +1,13 @@
-# Simulation analysis
+# Simulation Analysis
 
-## 1. Independent data simulation analysis
+## 1. Independent Data Simulation Analysis
 
-Execute `1.Simulation_independent.R` to obtain the FDR, Power and heterogeneity for `PALM` and compared methods using simulated independent data.
+Run `1.Simulation_independent.R` to calculate FDR, Power, and heterogeneity for PALM and compared methods using simulated independent data.
 
-## 2. Longitudinal data simulation analysis
+## 2. Longitudinal Data Simulation Analysis
 
-Execute `2.Simulation_longitudinal.R` to oobtain the FDR, Power and heterogeneity for `PALM` and compared methods using simulated longitudinal data.
+Run `2.Simulation_longitudinal.R` to calculate FDR, Power, and heterogeneity for PALM and compared methods using simulated longitudinal data.
 
-## 3. Poisson-like methods simulation analysis
+## 3. Poisson-like Methods Simulation Analysis
 
-Execute `3.Simulation_Poisson.R` to obtain the FDR, Power and heterogeneity for `PALM` and compared Poisson-like methods using simulated independent data.
+Run `3.Simulation_Poisson.R` to calculate FDR, Power, and heterogeneity for PALM and compared Poisson-like methods using simulated independent data.
