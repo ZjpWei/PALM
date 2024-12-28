@@ -279,7 +279,7 @@
   }
 
   ## Meta-analysis
-  null_obj_RA <- palm.null.model(rel.abd = rel.abd, N = N, prev.filter = 0)
+  null_obj_RA <- palm.null.model(rel.abd = rel.abd, depth = N, prev.filter = 0)
 
   summary.score.RA <- palm.get.summary(null.obj = null_obj_RA,
                                        covariate.interest = covariate.interest)
