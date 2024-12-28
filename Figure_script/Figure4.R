@@ -189,8 +189,8 @@
                                      Study = factor(colnames(ANCOMBC2.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = ANCOMBC2.model$est[l,],
-                                     AA.lower = ANCOMBC2.model$est[l,] - sqrt(ANCOMBC2.model$var[l,]),
-                                     AA.upper = ANCOMBC2.model$est[l,] + sqrt(ANCOMBC2.model$var[l,])))
+                                     AA.lower = ANCOMBC2.model$est[l,] - 1.96 * sqrt(ANCOMBC2.model$var[l,]),
+                                     AA.upper = ANCOMBC2.model$est[l,] + 1.96 * sqrt(ANCOMBC2.model$var[l,])))
 
     if(qvals[l] <= target.pval.fdr){
       df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
@@ -209,7 +209,7 @@
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
-    coord_flip() + theme_minimal() + ylim(-1.6, 3.0) +
+    coord_flip() + theme_minimal() + ylim(-2, 3.5) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.ticks = element_blank(),
@@ -245,8 +245,8 @@
                                      Study = factor(colnames(Linda.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = Linda.model$est[l,],
-                                     AA.lower = Linda.model$est[l,] - sqrt(Linda.model$var[l,]),
-                                     AA.upper = Linda.model$est[l,] + sqrt(Linda.model$var[l,])))
+                                     AA.lower = Linda.model$est[l,] - 1.96 * sqrt(Linda.model$var[l,]),
+                                     AA.upper = Linda.model$est[l,] + 1.96 * sqrt(Linda.model$var[l,])))
     if(qvals[l] <= target.pval.fdr){
       df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
                                        AA = Linda.res[l,"est"]))
@@ -264,7 +264,7 @@
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-2.6, 2.4) +
+    ylim(-3.5, 3.5) +
     theme(axis.title.x = element_blank(),
           axis.title.y = element_blank(),
           axis.ticks = element_blank(),
@@ -301,8 +301,8 @@
                                      Study = factor(colnames(lmclr.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = lmclr.model$est[l,],
-                                     AA.lower = lmclr.model$est[l,] - sqrt(lmclr.model$var[l,]),
-                                     AA.upper = lmclr.model$est[l,] + sqrt(lmclr.model$var[l,])))
+                                     AA.lower = lmclr.model$est[l,] - 1.96 * sqrt(lmclr.model$var[l,]),
+                                     AA.upper = lmclr.model$est[l,] + 1.96 * sqrt(lmclr.model$var[l,])))
     if(qvals[l] <= target.pval.fdr){
       df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
                                        AA = lmclr.res[l,"est"]))
@@ -320,7 +320,7 @@
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() +  geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-1.8, 1.9) +
+    ylim(-2.5, 2.5) +
     theme(axis.title.x = element_blank(),
           axis.title.y = element_blank(),
           axis.ticks = element_blank(),
@@ -357,8 +357,8 @@
                                      Study = factor(colnames(Maaslin2.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = Maaslin2.model$est[l,],
-                                     AA.lower = Maaslin2.model$est[l,] - sqrt(Maaslin2.model$var[l,]),
-                                     AA.upper = Maaslin2.model$est[l,] + sqrt(Maaslin2.model$var[l,])))
+                                     AA.lower = Maaslin2.model$est[l,] - 1.96 * sqrt(Maaslin2.model$var[l,]),
+                                     AA.upper = Maaslin2.model$est[l,] + 1.96 * sqrt(Maaslin2.model$var[l,])))
     if(qvals[l] <= target.pval.fdr){
       df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
                                        qval = qvals[l],
@@ -377,7 +377,7 @@
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-0.05, 0.05) +
+    ylim(-0.08, 0.08) +
     theme(axis.title.x = element_blank(),
           axis.title.y = element_blank(),
           axis.ticks = element_blank(),
@@ -414,8 +414,8 @@
                                      Study = factor(colnames(PALM.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = PALM.model$est[l,],
-                                     AA.lower = PALM.model$est[l,] - sqrt(PALM.model$var[l,]),
-                                     AA.upper = PALM.model$est[l,] + sqrt(PALM.model$var[l,])))
+                                     AA.lower = PALM.model$est[l,] - 1.96 * sqrt(PALM.model$var[l,]),
+                                     AA.upper = PALM.model$est[l,] + 1.96 * sqrt(PALM.model$var[l,])))
     if(qvals[l] <= target.pval.fdr){
       df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
                                        AA = PALM.res[l,"coef"]))
@@ -434,7 +434,7 @@
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-3, 3.8) +
+    ylim(-4, 6) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.ticks = element_blank(),
@@ -507,12 +507,11 @@
                                      Study = factor(colnames(ANCOMBC2.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = ANCOMBC2.model$est[l,],
-                                     AA.lower = ANCOMBC2.model$est[l,] - sqrt(ANCOMBC2.model$var[l,]),
-                                     AA.upper = ANCOMBC2.model$est[l,] + sqrt(ANCOMBC2.model$var[l,])))
+                                     AA.lower = ANCOMBC2.model$est[l,] - 1.96 * sqrt(ANCOMBC2.model$var[l,]),
+                                     AA.upper = ANCOMBC2.model$est[l,] + 1.96 * sqrt(ANCOMBC2.model$var[l,])))
 
     if(qvals[l] <= target.pval.fdr){
-      df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
-                                       AA = ANCOMBC2.res[l,"est"]))
+      df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames), AA = 0))
     }
   }
 
@@ -527,7 +526,7 @@
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
-    coord_flip() + theme_minimal() + ylim(-1.6, 3.0) +
+    coord_flip() + theme_minimal() +ylim(-2, 3.5)+
     theme(axis.title.y = element_blank(),
           axis.title.x = element_text(size = 15),
           axis.ticks = element_blank(),
@@ -563,8 +562,8 @@
                                      Study = factor(colnames(Linda.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = Linda.model$est[l,],
-                                     AA.lower = Linda.model$est[l,] - sqrt(Linda.model$var[l,]),
-                                     AA.upper = Linda.model$est[l,] + sqrt(Linda.model$var[l,])))
+                                     AA.lower = Linda.model$est[l,] - 1.96 * sqrt(Linda.model$var[l,]),
+                                     AA.upper = Linda.model$est[l,] + 1.96 * sqrt(Linda.model$var[l,])))
     if(qvals[l] <= target.pval.fdr){
       df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
                                        AA = Linda.res[l,"est"]))
@@ -582,7 +581,7 @@
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-2.6, 2.4) +
+    ylim(-3.5, 3.5) +
     theme(axis.title.x = element_text(size = 15),
           axis.title.y = element_blank(),
           axis.ticks = element_blank(),
@@ -619,8 +618,8 @@
                                      Study = factor(colnames(lmclr.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = lmclr.model$est[l,],
-                                     AA.lower = lmclr.model$est[l,] - sqrt(lmclr.model$var[l,]),
-                                     AA.upper = lmclr.model$est[l,] + sqrt(lmclr.model$var[l,])))
+                                     AA.lower = lmclr.model$est[l,] - 1.96 * sqrt(lmclr.model$var[l,]),
+                                     AA.upper = lmclr.model$est[l,] + 1.96 * sqrt(lmclr.model$var[l,])))
     if(qvals[l] <= target.pval.fdr){
       df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
                                        AA = lmclr.res[l,"est"]))
@@ -638,7 +637,7 @@
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() +  geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-1.8, 1.9) +
+    ylim(-2.5, 2.5) +
     theme(axis.title.x = element_text(size = 15),
           axis.title.y = element_blank(),
           axis.ticks = element_blank(),
@@ -675,8 +674,8 @@
                                      Study = factor(colnames(Maaslin2.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = Maaslin2.model$est[l,],
-                                     AA.lower = Maaslin2.model$est[l,] - sqrt(Maaslin2.model$var[l,]),
-                                     AA.upper = Maaslin2.model$est[l,] + sqrt(Maaslin2.model$var[l,])))
+                                     AA.lower = Maaslin2.model$est[l,] - 1.96 * sqrt(Maaslin2.model$var[l,]),
+                                     AA.upper = Maaslin2.model$est[l,] + 1.96 * sqrt(Maaslin2.model$var[l,])))
     if(qvals[l] <= target.pval.fdr){
       df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
                                        qval = qvals[l],
@@ -695,7 +694,7 @@
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-0.05, 0.05) +
+    ylim(-0.08, 0.08) +
     theme(axis.title.x = element_text(size = 15),
           axis.title.y = element_blank(),
           axis.ticks = element_blank(),
@@ -732,8 +731,8 @@
                                      Study = factor(colnames(PALM.model$est),
                                                     levels = paste0("CRC", 5:1)),
                                      AA = PALM.model$est[l,],
-                                     AA.lower = PALM.model$est[l,] - sqrt(PALM.model$var[l,]),
-                                     AA.upper = PALM.model$est[l,] + sqrt(PALM.model$var[l,])))
+                                     AA.lower = PALM.model$est[l,] - 1.96 * sqrt(PALM.model$var[l,]),
+                                     AA.upper = PALM.model$est[l,] + 1.96 * sqrt(PALM.model$var[l,])))
     if(qvals[l] <= target.pval.fdr){
       df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
                                        AA = PALM.res[l,"coef"]))
@@ -752,7 +751,7 @@
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-3, 3.8) +
+    ylim(-4, 6) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_text(size = 15),
           axis.ticks = element_blank(),

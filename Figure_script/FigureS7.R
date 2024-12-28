@@ -120,8 +120,8 @@
                                      Study = factor(rep(l, length(genus.lst)), levels = study.names,
                                                     labels = paste0("MTBL", rev(study.id))),
                                      AA = PALM.df[genus.lst, paste0(l,":est")],
-                                     AA.lower = PALM.df[genus.lst, paste0(l,":est")] - PALM.df[genus.lst, paste0(l,":std")],
-                                     AA.upper = PALM.df[genus.lst, paste0(l,":est")] + PALM.df[genus.lst, paste0(l,":std")]))
+                                     AA.lower = PALM.df[genus.lst, paste0(l,":est")] - 1.96 * PALM.df[genus.lst, paste0(l,":std")],
+                                     AA.upper = PALM.df[genus.lst, paste0(l,":est")] + 1.96 * PALM.df[genus.lst, paste0(l,":std")]))
   }
   df.area <- tibble(genus = factor(genus.lst[PALM.df[genus.lst, "het.qval"] <= target.get.fdr],
                                    levels= genus.lst), AA = Inf)
@@ -139,8 +139,7 @@
                                   "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
                        breaks = c("MTBL8", "MTBL7", "MTBL6", "MTBL5",
                                   "MTBL4", "MTBL3", "MTBL2", "MTBL1")) +
-    coord_flip() +
-    theme_minimal() +
+    coord_flip() + theme_minimal() + ylim(-2.5, 3) +
     theme(axis.title.x = element_text(size = 15),
           axis.title.y = element_blank(),
           axis.ticks = element_blank(),
@@ -173,8 +172,8 @@
                                      study = factor(rep(l, length(genus.lst)), levels = study.names,
                                                     labels = paste0("MTBL", rev(study.id))),
                                      AA = Maaslin2.df[genus.lst, paste0(l,":est")],
-                                     AA.lower = Maaslin2.df[genus.lst, paste0(l,":est")] - Maaslin2.df[genus.lst, paste0(l,":std")],
-                                     AA.upper = Maaslin2.df[genus.lst, paste0(l,":est")] + Maaslin2.df[genus.lst, paste0(l,":std")]))
+                                     AA.lower = Maaslin2.df[genus.lst, paste0(l,":est")] - 1.96 * Maaslin2.df[genus.lst, paste0(l,":std")],
+                                     AA.upper = Maaslin2.df[genus.lst, paste0(l,":est")] + 1.96 * Maaslin2.df[genus.lst, paste0(l,":std")]))
   }
   df.area <- tibble(genus = factor(genus.lst[Maaslin2.df[genus.lst, "het.qval"] <= target.get.fdr],
                                    levels= genus.lst), AA = Inf)
@@ -226,8 +225,8 @@
                                      study = factor(rep(l, length(genus.lst)), levels = study.names,
                                                     labels = paste0("MTBL", rev(study.id))),
                                      AA = ANCOMBC2.df[genus.lst, paste0(l,":est")],
-                                     AA.lower = ANCOMBC2.df[genus.lst, paste0(l,":est")] - ANCOMBC2.df[genus.lst, paste0(l,":std")],
-                                     AA.upper = ANCOMBC2.df[genus.lst, paste0(l,":est")] + ANCOMBC2.df[genus.lst, paste0(l,":std")]))
+                                     AA.lower = ANCOMBC2.df[genus.lst, paste0(l,":est")] - 1.96 * ANCOMBC2.df[genus.lst, paste0(l,":std")],
+                                     AA.upper = ANCOMBC2.df[genus.lst, paste0(l,":est")] + 1.96 * ANCOMBC2.df[genus.lst, paste0(l,":std")]))
   }
   df.area <- tibble(genus = factor(genus.lst[ANCOMBC2.df[genus.lst, "het.qval"] <= target.get.fdr],
                                    levels= genus.lst), AA = Inf)
@@ -277,8 +276,8 @@
                                      study = factor(rep(l, length(genus.lst)), levels = study.names,
                                                     labels = paste0("MTBL", rev(study.id))),
                                      AA = Linda.df[genus.lst, paste0(l,":est")],
-                                     AA.lower = Linda.df[genus.lst, paste0(l,":est")] - Linda.df[genus.lst, paste0(l,":std")],
-                                     AA.upper = Linda.df[genus.lst, paste0(l,":est")] + Linda.df[genus.lst, paste0(l,":std")]))
+                                     AA.lower = Linda.df[genus.lst, paste0(l,":est")] - 1.96 * Linda.df[genus.lst, paste0(l,":std")],
+                                     AA.upper = Linda.df[genus.lst, paste0(l,":est")] + 1.96 * Linda.df[genus.lst, paste0(l,":std")]))
   }
   df.area <- tibble(genus = factor(genus.lst[Linda.df[genus.lst, "het.qval"] <= target.get.fdr],
                                    levels= genus.lst), AA = Inf)
@@ -328,8 +327,8 @@
                                      study = factor(rep(l, length(genus.lst)), levels = study.names,
                                                     labels = paste0("MTBL", rev(study.id))),
                                      AA = LMCLR.df[genus.lst, paste0(l,":est")],
-                                     AA.lower = LMCLR.df[genus.lst, paste0(l,":est")] - LMCLR.df[genus.lst, paste0(l,":std")],
-                                     AA.upper = LMCLR.df[genus.lst, paste0(l,":est")] + LMCLR.df[genus.lst, paste0(l,":std")]))
+                                     AA.lower = LMCLR.df[genus.lst, paste0(l,":est")] - 1.96 * LMCLR.df[genus.lst, paste0(l,":std")],
+                                     AA.upper = LMCLR.df[genus.lst, paste0(l,":est")] + 1.96 * LMCLR.df[genus.lst, paste0(l,":std")]))
   }
   df.area <- tibble(genus = factor(genus.lst[LMCLR.df[genus.lst, "het.qval"] <= target.get.fdr],
                                    levels= genus.lst), AA = Inf)
