@@ -6,7 +6,7 @@ This project contains the analyses for the `PALM` paper. Please refer to the `RE
 
 ## References
 
-* Zhoujingpeng Wei, Qilin Hong, Guanhua Chen, Tina V. Hartert, Christian Rosas-Salazar,  Suman R. Das, and Zheng-Zheng Tang. *Fast and reliable association discovery in large-scale microbiome studies and meta-analyses using PALM*.
+* Wei et al. *Fast and reliable association discovery in large-scale microbiome studies and meta-analyses using PALM*. Submitted.
 
 ## Contact
 
