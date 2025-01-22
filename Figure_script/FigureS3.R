@@ -12,7 +12,7 @@
   rm(list = ls())
 
   ## Original ----
-  set.seed(2024)
+  set.seed(2022)
   load("./Data/CRC_data/data/meta.Rdata")
   load("./CRC/Processed_data/data.org.K401.Rdata")
   studymeta <- unique(meta$Study)
@@ -57,7 +57,8 @@
     # Calculate ordination
     iMDS <- phyloseq::ordinate(PHYSEQ, "PCoA", distance = "bray")
 
-    PCoA <- data.frame(PCo1 = iMDS$vectors[,"Axis.1"], PCo2 = iMDS$vectors[,"Axis.2"], Data = Group,
+    PCoA <- data.frame(PCo1 = iMDS$vectors[,"Axis.1"],
+                       PCo2 = iMDS$vectors[,"Axis.2"], Data = Group,
                        outcome = as.character(outcome))
 
     g.plots[[l]] <-  ggplot(PCoA, aes(x=PCo1, y=PCo2, color=Data)) + geom_point() +
@@ -76,7 +77,7 @@
   }
 
   ## Generate figures ----
-  pdf("./Figure/FigureS3.pdf", width = 10.35, height = 6.95, bg = "white")
+  pdf("./Figure/FigureS3_seed2022.pdf", width = 10.35, height = 6.95, bg = "white")
 
   ggpubr::ggarrange(g.plots[[1]], g.plots[[2]], g.plots[[3]],
                     g.plots[[4]], g.plots[[5]], nrow = 2, ncol = 3,

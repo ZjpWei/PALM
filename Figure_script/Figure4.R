@@ -57,20 +57,19 @@
   par(mfrow = c(1, 4), mar = c(2, 2, 2, 0.2), oma = c(0, 0, 0, 0))
 
   ## PALM v.s. ANCOM-BC2
-  data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(het.qval)) %>%
-    dplyr::left_join(ANCOMBC2.res %>% dplyr::transmute(feature = features, pval.x = -log10(het.qval)), by = "feature")
+  data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(qval.het)) %>%
+    dplyr::left_join(ANCOMBC2.res %>% dplyr::transmute(feature = features, pval.x = -log10(qval.het)), by = "feature")
 
   plot(data.plot$pval.x, data.plot$pval.y,
-       ylab = "",#expression(atop("Het. test " ~ -log10[10](p-val) ,"in PALM")),
+       ylab = "",
        xlab = "",
        col = "blue", pch = 18, mgp=c(2,0.5,0),
        cex.axis = 1.6,  cex.lab = 1.6)
   abline(0, 1, col = "brown", lty = 2)
-  #mtext(expression(atop("Het. test " ~ -log10[10](p-val) ,"in ANCOM-BC2")), side = 1, line = 4)
 
   ## PALM v.s. LinDA
-  data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(het.qval)) %>%
-    dplyr::left_join(Linda.res %>% dplyr::transmute(feature = features, pval.x = -log10(het.qval)), by = "feature") %>%
+  data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(qval.het)) %>%
+    dplyr::left_join(Linda.res %>% dplyr::transmute(feature = features, pval.x = -log10(qval.het)), by = "feature") %>%
     dplyr::filter(!is.na(pval.x))
 
   plot(data.plot$pval.x, data.plot$pval.y,
@@ -79,11 +78,10 @@
        col = "skyblue", pch = 18, mgp=c(2,0.5,0), yaxt = "n",
        cex.axis = 1.6,  cex.lab = 1.6)
   abline(0, 1, col = "brown", lty = 2)
-  # mtext(expression(atop("Het. test " ~ -log10[10](p-val) ,"in LinDA")), side = 1, line = 4)
 
   ## PALM v.s. LM-CLR
-  data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(het.qval)) %>%
-    dplyr::left_join(lmclr.res %>% dplyr::transmute(feature = features, pval.x = -log10(het.qval)), by = "feature") %>%
+  data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(qval.het)) %>%
+    dplyr::left_join(lmclr.res %>% dplyr::transmute(feature = features, pval.x = -log10(qval.het)), by = "feature") %>%
     dplyr::filter(!is.na(pval.x))
 
   plot(data.plot$pval.x, data.plot$pval.y, ylab = " ", xlab = "",
@@ -91,18 +89,16 @@
        xlim =c(0, 4) ,
        cex.axis = 1.6,  cex.lab = 1.6)
   abline(0, 1, col = "brown", lty = 2)
-  #mtext(expression(atop("Het. test " ~ -log10[10](p-val) ,"in LM-CLR")), side = 1, line = 4)
 
   ## PALM v.s. MaAsLin2
-  data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(het.qval)) %>%
-    dplyr::left_join(Maaslin2.res %>% dplyr::transmute(feature = features, pval.x = -log10(het.qval)), by = "feature") %>%
+  data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(qval.het)) %>%
+    dplyr::left_join(Maaslin2.res %>% dplyr::transmute(feature = features, pval.x = -log10(qval.het)), by = "feature") %>%
     dplyr::filter(!is.na(pval.x))
 
   plot(data.plot$pval.x, data.plot$pval.y, ylab = " ", xlab = "",
        col = "#4dac26", pch = 18, mgp=c(2,0.5,0),  yaxt = "n",
        cex.axis = 1.6,  cex.lab = 1.6)
   abline(0, 1, col = "brown", lty = 2)
-  #mtext(expression(atop("Het. test " ~ -log10[10](p-val) ,"in MaAsLin2")), side = 1, line = 4)
 
   dev.off()
 
@@ -124,11 +120,11 @@
       lmclr.res$features[lmclr.res$qval <= target.fdr & !is.na(lmclr.res$qval)]),
     Linda.res$features[Linda.res$qval <= target.fdr & !is.na(Linda.res$qval)])
 
-  taxa.id.het <-  unique(c(ANCOMBC2.res$features[ANCOMBC2.res$het.qval <= target.pval.fdr & !is.na(ANCOMBC2.res$het.qval)],
-                           PALM.res$feature[PALM.res$het.qval <= target.pval.fdr & !is.na(PALM.res$het.qval)],
-                           Maaslin2.res$features[Maaslin2.res$het.qval <= target.pval.fdr & !is.na(Maaslin2.res$het.qval)],
-                           lmclr.res$features[lmclr.res$het.qval <= target.pval.fdr & !is.na(lmclr.res$het.qval)],
-                           Linda.res$features[Linda.res$het.qval <= target.pval.fdr & !is.na(Linda.res$het.qval)]))
+  taxa.id.het <-  unique(c(ANCOMBC2.res$features[ANCOMBC2.res$qval.het <= target.pval.fdr & !is.na(ANCOMBC2.res$qval.het)],
+                           PALM.res$feature[PALM.res$qval.het <= target.pval.fdr & !is.na(PALM.res$qval.het)],
+                           Maaslin2.res$features[Maaslin2.res$qval.het <= target.pval.fdr & !is.na(Maaslin2.res$qval.het)],
+                           lmclr.res$features[lmclr.res$qval.het <= target.pval.fdr & !is.na(lmclr.res$qval.het)],
+                           Linda.res$features[Linda.res$qval.het <= target.pval.fdr & !is.na(Linda.res$qval.het)]))
 
 
   taxa.id.all <- intersect(taxa.id.sig, taxa.id.het)
@@ -179,7 +175,7 @@
 
   ## ANCOM-BC2
   colnames(ANCOMBC2.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(ANCOMBC2.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(ANCOMBC2.res[,"pval.het"], method = "fdr")
   names(qvals) <- ANCOMBC2.res$feature
   qvals[is.na(qvals)] <- 1
   df.plot <- NULL
@@ -205,7 +201,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("ANCOM-BC2\nCoefficients") +
+    theme_minimal() + ylab("ANCOM-BC2\nassociation effect") +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
@@ -236,7 +232,7 @@
 
   ## LinDA
   colnames(Linda.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(Linda.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(Linda.res[,"pval.het"], method = "fdr")
   names(qvals) <- Linda.res$feature
   df.plot <- NULL
   df.area <- NULL
@@ -260,7 +256,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("LinDA\nCoefficients") +
+    theme_minimal() + ylab("LinDA\nassociation effect") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
@@ -291,7 +287,7 @@
 
   ## LM-CLR
   colnames(lmclr.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(lmclr.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(lmclr.res[,"pval.het"], method = "fdr")
   names(qvals) <- lmclr.res$feature
 
   df.plot <- NULL
@@ -316,7 +312,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("LM-CLR\nCoefficients") +
+    theme_minimal() + ylab("LM-CLR\nassociation effect") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() +  geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
@@ -347,7 +343,7 @@
 
   ## Maaslin2
   colnames(Maaslin2.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(Maaslin2.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(Maaslin2.res[,"pval.het"], method = "fdr")
   names(qvals) <- Maaslin2.res$feature
 
   df.plot <- NULL
@@ -373,7 +369,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("MaAsLin2\nCoefficients") +
+    theme_minimal() + ylab("MaAsLin2\nassociation effect") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
@@ -404,7 +400,7 @@
 
   ## PALM
   colnames(PALM.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(PALM.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(PALM.res[,"pval.het"], method = "fdr")
   names(qvals) <- PALM.res$feature
 
   df.plot <- NULL
@@ -429,12 +425,12 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("PALM\nCoefficients") +
+    theme_minimal() + ylab("PALM\nassociation effect") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-4, 6) +
+    ylim(-6, 6) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_blank(),
           axis.ticks = element_blank(),
@@ -445,7 +441,7 @@
 
           legend.title = element_text(hjust = 0.5, size = 16),
           legend.text = element_text(size = 13),
-          legend.position = c(0.2, 0.85),
+          legend.position = c(0.15, 0.85),
           legend.direction = "vertical",
           legend.box = "vertical",
           strip.text = element_blank()) +
@@ -497,7 +493,7 @@
 
   ## ANCOM-BC2
   colnames(ANCOMBC2.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(ANCOMBC2.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(ANCOMBC2.res[,"pval.het"], method = "fdr")
   names(qvals) <- ANCOMBC2.res$feature
   qvals[is.na(qvals)] <- 1
   df.plot <- NULL
@@ -522,7 +518,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("ANCOM-BC2\nCoefficients") +
+    theme_minimal() + ylab("ANCOM-BC2\nassociation effect") +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
@@ -553,7 +549,7 @@
 
   ## LinDA
   colnames(Linda.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(Linda.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(Linda.res[,"pval.het"], method = "fdr")
   names(qvals) <- Linda.res$feature
   df.plot <- NULL
   df.area <- NULL
@@ -577,7 +573,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("LinDA\nCoefficients") +
+    theme_minimal() + ylab("LinDA\nassociation effect") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
@@ -608,7 +604,7 @@
 
   ## LM-CLR
   colnames(lmclr.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(lmclr.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(lmclr.res[,"pval.het"], method = "fdr")
   names(qvals) <- lmclr.res$feature
 
   df.plot <- NULL
@@ -633,7 +629,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("LM-CLR\nCoefficients") +
+    theme_minimal() + ylab("LM-CLR\nassociation effect") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() +  geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
@@ -664,7 +660,7 @@
 
   ## Maaslin2
   colnames(Maaslin2.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(Maaslin2.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(Maaslin2.res[,"pval.het"], method = "fdr")
   names(qvals) <- Maaslin2.res$feature
 
   df.plot <- NULL
@@ -690,7 +686,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("MaAsLin2\nCoefficients") +
+    theme_minimal() + ylab("MaAsLin2\nassociation effect") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
@@ -721,7 +717,7 @@
 
   ## PALM
   colnames(PALM.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(PALM.res[,"het.pval"], method = "fdr")
+  qvals <- p.adjust(PALM.res[,"pval.het"], method = "fdr")
   names(qvals) <- PALM.res$feature
 
   df.plot <- NULL
@@ -746,12 +742,12 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    theme_minimal() + ylab("PALM\nCoefficients") +
+    theme_minimal() + ylab("PALM\nassociation effect") +
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-4, 6) +
+    ylim(-6, 6) +
     theme(axis.title.y = element_blank(),
           axis.title.x = element_text(size = 15),
           axis.ticks = element_blank(),

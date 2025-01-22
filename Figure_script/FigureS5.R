@@ -10,7 +10,7 @@
   rm(list = ls())
   load("./Metabolites/Output/MTBL_PALM.Rdata")
   load("./Metabolites/Output/MTBL_others.Rdata")
-  load("./MTBL.RData")
+  load("./Metabolites/Processed_data/MTBL.RData")
 
   feature.ids <- PALM.meta.coef$feature
   MTBL.ids <- colnames(PALM.meta.coef)[-1]
@@ -43,7 +43,6 @@
   Maaslin2_qval_mat <- apply(Maaslin2_pval_mat, 2, p.adjust, method = "fdr")
   Maaslin2_coef_mat[is.na(Maaslin2_coef_mat)] <- 0
   Maaslin2_coef_mat[Maaslin2_qval_mat > 0.05] <- 0
-
 
   ## PALM v.s. ANCOMBC2
   prop <- NULL

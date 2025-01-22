@@ -23,18 +23,7 @@
   target.get.fdr <- 0.1
 
   ## PALM
-  PALM.df <- PALM.meta.coef %>% dplyr::select(feature, coef = selected.lst) %>%
-    dplyr::left_join(
-      PALM.meta.pval %>% dplyr::select(feature, pval = selected.lst) %>%
-        dplyr::mutate(qval = p.adjust(pval, method = "fdr")), by = "feature") %>%
-    dplyr::left_join(
-      PALM.meta.pval.het %>% dplyr::select(feature, het.pval = selected.lst) %>%
-        dplyr::mutate(het.qval = p.adjust(het.pval, method = "fdr")), by = "feature")
-  for(st.id in names(PALM.test[[selected.lst]]$palm_fits)){
-    PALM.df <- PALM.df %>% dplyr::left_join(
-      PALM.test[[selected.lst]]$palm_fits[[st.id]] %>%
-        dplyr::select(feature, !!paste0(st.id,":est") := coef, !!paste0(st.id,":std") := stderr), by = "feature")
-  }
+  PALM.df <- PALM.test[[selected.lst]]
   PALM.df <- PALM.df %>% dplyr::mutate(feature = gsub(".*;g__","",feature)) %>%
     tibble::column_to_rownames("feature")
 
@@ -109,7 +98,8 @@
   hmdb.data <- hmdb.data %>% rename(Compound = HMDB)
 
   genus.lst <- rownames(PALM.df)[PALM.df$qval <= target.fdr & ANCOMBC2.df$qval <= target.fdr &
-                                   Maaslin2.df$qval <= target.fdr & Linda.df$qval <= target.fdr & LMCLR.df$qval <= target.fdr]
+                                 Maaslin2.df$qval <= target.fdr & Linda.df$qval <= target.fdr &
+                                 LMCLR.df$qval <= target.fdr]
 
   genus.lst <- genus.lst[order(PALM.df[genus.lst, "coef"])]
 
@@ -119,9 +109,9 @@
     df.plot <- rbind(df.plot, tibble(genus = factor(genus.lst, levels= genus.lst),
                                      Study = factor(rep(l, length(genus.lst)), levels = study.names,
                                                     labels = paste0("MTBL", rev(study.id))),
-                                     AA = PALM.df[genus.lst, paste0(l,":est")],
-                                     AA.lower = PALM.df[genus.lst, paste0(l,":est")] - 1.96 * PALM.df[genus.lst, paste0(l,":std")],
-                                     AA.upper = PALM.df[genus.lst, paste0(l,":est")] + 1.96 * PALM.df[genus.lst, paste0(l,":std")]))
+                                     AA = PALM.df[genus.lst, paste0(l,"_effect")],
+                                     AA.lower = PALM.df[genus.lst, paste0(l,"_effect")] - 1.96 * PALM.df[genus.lst, paste0(l,"_stderr")],
+                                     AA.upper = PALM.df[genus.lst, paste0(l,"_effect")] + 1.96 * PALM.df[genus.lst, paste0(l,"_stderr")]))
   }
   df.area <- tibble(genus = factor(genus.lst[PALM.df[genus.lst, "het.qval"] <= target.get.fdr],
                                    levels= genus.lst), AA = Inf)
@@ -133,7 +123,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = Study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    ylab("PALM\nCoefficients") + xlab("Genus") +
+    ylab("PALM\nassociation effect") + xlab("Genus") +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
     scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
                                   "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
@@ -185,7 +175,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    ylab("MaAsLin2\nCoefficients") + xlab("Genus") +
+    ylab("MaAsLin2\nassociation effect") + xlab("Genus") +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
     scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
                                   "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
@@ -237,7 +227,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    ylab("ANCOM-BC2\nCoefficients") + xlab("Genus") +
+    ylab("ANCOM-BC2\nassociation effect") + xlab("Genus") +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
     scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
                                   "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
@@ -288,7 +278,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    ylab("LinDA\nCoefficients") + xlab("Genus") +
+    ylab("LinDA\nassociation effect") + xlab("Genus") +
     geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
     scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
                                   "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
@@ -339,7 +329,7 @@
                   width = 0, linewidth = 0.5) +
     geom_point(pch = 18, aes(color = study),
                size = 2.5, position = position_dodge(width = 0.6)) +
-    ylab("LM-CLR\nCoefficients") + xlab("Genus") +
+    ylab("LM-CLR\nassociation effect") + xlab("Genus") +
     scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
                                   "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
                        breaks = c("MTBL8", "MTBL7", "MTBL6", "MTBL5",
