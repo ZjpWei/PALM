@@ -9,6 +9,8 @@ ancombc.fun <- function(feature.table,
                         method = "ancombc2"){
 
   if(method == "ancombc2"){
+    ## We add 0.5 as pseudo-count for ANCOM-BC2.
+    ## assays <- S4Vectors::SimpleList(counts = as.matrix(feature.table + 0.5))
     assays <- S4Vectors::SimpleList(counts = as.matrix(feature.table))
   }else if(method == "ancombc"){
     ## ANCOM-BC will add 1 as pseudo-count in it's own function.
