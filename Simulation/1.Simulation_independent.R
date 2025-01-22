@@ -482,40 +482,16 @@
       Study <- c(Study, "meta")
 
       ## PALM
-      null_obj_RA <- palm.null.model(rel.abd = rel.abd, prev.filter = 0)
+      null_obj <- palm.null.model(rel.abd = rel.abd, prev.filter = 0)
 
-      summary.score.RA <- palm.get.summary(null.obj = null_obj_RA,
-                                           covariate.interest = covariate.interest)
+      summary.score <- palm.get.summary(null.obj = null_obj, covariate.interest = covariate.interest)
 
-      ## original PALM corrected
-      PALM.model <- palm.test(summary.stats = summary.score.RA, p.adjust.method = "fdr")
-
-      AA.est <- matrix(NA, nrow = length(feature.ID), ncol = L,
-                       dimnames = list(feature.ID, as.character(1:L)))
-      AA.var <- matrix(NA, nrow = length(feature.ID), ncol = L,
-                       dimnames = list(feature.ID, as.character(1:L)))
-      for(l in 1:L){
-        ## Calculate FDR
-        AA.est[PALM.model$disease$palm_fits[[l]]$feature,l] <- PALM.model$disease$palm_fits[[l]]$coef
-        AA.var[PALM.model$disease$palm_fits[[l]]$feature,l] <- (PALM.model$disease$palm_fits[[l]]$stderr)^2
-      }
-
-      ## Heterogeneity test
-      pval.het <- NULL
-      for(k in 1:nrow(AA.est)){
-        nonna.id <- !is.na(AA.est[k,])
-        if(sum(nonna.id) > 1){
-          m <- metafor::rma(yi = AA.est[k,nonna.id], vi = AA.var[k,nonna.id], method = "EE")
-          pval.het <- c(pval.het, m$QEp)
-        }else{
-          pval.het <- c(pval.het, NA)
-        }
-      }
-      qval.het <- p.adjust(p = pval.het, method = "fdr")
+      PALM.model <- palm.meta.summary(summary.stats = summary.score, p.adjust.method = "fdr")
 
       ## Calculate FDR
-      qval.sin <- PALM.model$disease$meta_fits$qval
-      feature.ids <- PALM.model$disease$meta_fits$feature
+      qval.sin <- PALM.model$disease$qval
+      qval.het <- PALM.model$disease$qval.het
+      feature.ids <-PALM.model$disease$feature
       select.feature <- feature.ids[qval.sin <= target.fdr]
       ep.fdr <- c(ep.fdr, length(setdiff(select.feature, signal.names)) / length(select.feature))
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
