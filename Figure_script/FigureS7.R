@@ -113,7 +113,7 @@
                                      AA.lower = PALM.df[genus.lst, paste0(l,"_effect")] - 1.96 * PALM.df[genus.lst, paste0(l,"_stderr")],
                                      AA.upper = PALM.df[genus.lst, paste0(l,"_effect")] + 1.96 * PALM.df[genus.lst, paste0(l,"_stderr")]))
   }
-  df.area <- tibble(genus = factor(genus.lst[PALM.df[genus.lst, "het.qval"] <= target.get.fdr],
+  df.area <- tibble(genus = factor(genus.lst[PALM.df[genus.lst, "qval.het"] <= target.get.fdr],
                                    levels= genus.lst), AA = Inf)
 
   g.PALM.c <- df.plot %>%
@@ -218,7 +218,7 @@
                                      AA.lower = ANCOMBC2.df[genus.lst, paste0(l,":est")] - 1.96 * ANCOMBC2.df[genus.lst, paste0(l,":std")],
                                      AA.upper = ANCOMBC2.df[genus.lst, paste0(l,":est")] + 1.96 * ANCOMBC2.df[genus.lst, paste0(l,":std")]))
   }
-  df.area <- tibble(genus = factor(genus.lst[ANCOMBC2.df[genus.lst, "het.qval"] <= target.get.fdr],
+  df.area <- tibble(genus = factor(genus.lst[ANCOMBC2.df[genus.lst, "qval.het"] <= target.get.fdr],
                                    levels= genus.lst), AA = Inf)
   g.ANCOMBC2.c <- df.plot %>%
     ggplot(aes(x=genus, y=AA)) +
