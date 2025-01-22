@@ -218,7 +218,7 @@
                                      AA.lower = ANCOMBC2.df[genus.lst, paste0(l,":est")] - 1.96 * ANCOMBC2.df[genus.lst, paste0(l,":std")],
                                      AA.upper = ANCOMBC2.df[genus.lst, paste0(l,":est")] + 1.96 * ANCOMBC2.df[genus.lst, paste0(l,":std")]))
   }
-  df.area <- tibble(genus = factor(genus.lst[ANCOMBC2.df[genus.lst, "qval.het"] <= target.get.fdr],
+  df.area <- tibble(genus = factor(genus.lst[ANCOMBC2.df[genus.lst, "het.qval"] <= target.get.fdr],
                                    levels= genus.lst), AA = Inf)
   g.ANCOMBC2.c <- df.plot %>%
     ggplot(aes(x=genus, y=AA)) +

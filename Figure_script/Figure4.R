@@ -400,7 +400,7 @@
 
   ## PALM
   colnames(PALM.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(PALM.res[,"qval.het"], method = "fdr")
+  qvals <- p.adjust(PALM.res[,"pval.het"], method = "fdr")
   names(qvals) <- PALM.res$feature
 
   df.plot <- NULL
@@ -717,7 +717,7 @@
 
   ## PALM
   colnames(PALM.model$est) <- paste0("CRC", 1:5)
-  qvals <- p.adjust(PALM.res[,"qval.het"], method = "fdr")
+  qvals <- p.adjust(PALM.res[,"pval.het"], method = "fdr")
   names(qvals) <- PALM.res$feature
 
   df.plot <- NULL
