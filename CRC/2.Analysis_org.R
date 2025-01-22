@@ -90,8 +90,8 @@
                              stderr = sqrt(meta.var),
                              pval = pval.sin,
                              qval = qval.sin,
-                             het.pval = tmp.pval,
-                             het.qval = p.adjust(tmp.pval, method = "fdr"))
+                             pval.het = tmp.pval,
+                             qval.het = p.adjust(tmp.pval, method = "fdr"))
 
   ANCOMBC2.model <- list(est = AA.est, var = AA.var)
 
@@ -112,7 +112,7 @@
                               min_abundance = 0,
                               min_prevalence = 0,
                               normalization = "TSS",
-                              transform = "AST",
+                              transform = 'AST',
                               analysis_method = "LM",
                               max_significance = 1,
                               random_effects = NULL,
@@ -155,8 +155,8 @@
                              stderr = sqrt(meta.var),
                              pval = pval.sin,
                              qval = qval.sin,
-                             het.pval = tmp.pval,
-                             het.qval = p.adjust(tmp.pval, method = "fdr"))
+                             pval.het = tmp.pval,
+                             qval.het = p.adjust(tmp.pval, method = "fdr"))
 
   Maaslin2.model <- list(est = AA.est, var = AA.var)
 
@@ -213,8 +213,8 @@
                           stderr = sqrt(meta.var),
                           pval = pval.sin,
                           qval = qval.sin,
-                          het.pval = tmp.pval,
-                          het.qval = p.adjust(tmp.pval, method = "fdr"))
+                          pval.het = tmp.pval,
+                          qval.het = p.adjust(tmp.pval, method = "fdr"))
 
   lmclr.model <- list(est = AA.est, var = AA.var)
 
@@ -266,8 +266,8 @@
                           stderr = sqrt(meta.var),
                           pval = pval.sin,
                           qval = qval.sin,
-                          het.pval = tmp.pval,
-                          het.qval = p.adjust(tmp.pval, method = "fdr"))
+                          pval.het = tmp.pval,
+                          qval.het = p.adjust(tmp.pval, method = "fdr"))
 
   Linda.model <- list(est = AA.est, var = AA.var)
 
@@ -285,7 +285,7 @@
                                        covariate.interest = covariate.interest)
 
   ## original PALM corrected
-  PALM.model <- palm.test(summary.stats = summary.score.RA, p.adjust.method = "fdr")
+  PALM.model <- palm.meta.summary(summary.stats = summary.score.RA, p.adjust.method = "fdr")
 
   ## Calculate FDR
   AA.est <- matrix(NA, nrow = length(feature.ID), ncol = L,
@@ -294,8 +294,8 @@
                    dimnames = list(feature.ID, as.character(1:L)))
 
   for(l in 1:L){
-    AA.est[PALM.model$disease$palm_fits[[l]]$feature,l] <- PALM.model$disease$palm_fits[[l]]$coef
-    AA.var[PALM.model$disease$palm_fits[[l]]$feature,l] <- (PALM.model$disease$palm_fits[[l]]$stderr)^2
+    AA.est[PALM.model$disease$feature,l] <- PALM.model$disease[[paste0("S", l,"_effect")]]
+    AA.var[PALM.model$disease$feature,l] <- (PALM.model$disease[[paste0("S", l,"_stderr")]])^2
   }
 
   ## Calculate FDR
@@ -305,9 +305,7 @@
     m <- metafor::rma(yi = AA.est[k,nonna.id], vi = AA.var[k,nonna.id], method = "EE")
     tmp.pval <- c(tmp.pval, m$QEp)
   }
-  PALM.res <- PALM.model$disease$meta_fits
-  PALM.res$het.pval = tmp.pval
-  PALM.res$het.qval = p.adjust(tmp.pval, method = "fdr")
+  PALM.res <- PALM.model$disease
   PALM.model <- list(est = AA.est, var = AA.var)
 
   ## Save output
