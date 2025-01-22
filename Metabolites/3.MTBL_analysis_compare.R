@@ -76,7 +76,7 @@
     meta.var <- 1 / var.statics
     q.coef <- (meta.coef)^2 / meta.var
 
-    ## Calculate FDR
+    ## Calculate Heterogeneity
     pval.sin <- 1 - pchisq(q.coef, df = 1)
     tmp.pval <- NULL
     for(k in 1:nrow(AA.est)){
