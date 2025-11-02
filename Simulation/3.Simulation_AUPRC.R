@@ -210,6 +210,8 @@
       signal.names <- c(signal.l.abd, signal.m.abd)
 
       #======================================= main analysis ===========================================#
+      source("./utility/roc.R")
+
       ## Align data
       rel.abd <- list()
       covariate.interest <- list()
