@@ -31,17 +31,22 @@
 
   ## Selected taxa
   Venn.set <- list("PALM" = taxa.id,
+                   "DESeq2" = DESeq2.res$features[DESeq2.res$qval <= fdr.cut & !is.na(DESeq2.res$qval)],
                    "ANCOM-BC2" = ANCOMBC2.res$features[ANCOMBC2.res$qval <= fdr.cut & !is.na(ANCOMBC2.res$qval)],
                    "MaAsLin2" = Maaslin2.res$features[Maaslin2.res$qval <= fdr.cut & !is.na(Maaslin2.res$qval)],
                    "LM-CLR" = lmclr.res$features[lmclr.res$qval <= fdr.cut & !is.na(lmclr.res$qval)],
                    "LinDA" = Linda.res$features[Linda.res$qval <= fdr.cut & !is.na(Linda.res$qval)])
 
-  venn.diagram(Venn.set, filename = "./Figure/Figure4_a.png",
-               category.names = c("" , "" , "", "", ""),
-               cex = 1.7,
-               width = 3000, height = 3000,
-               fill = c("red", "blue", "#4dac26", "orange", "skyblue"),
-               cat.dist = c(0.1, 0.06, 0.09, 0.1, 0.1))
+
+  # Venn.set is your named list of character vectors
+  mat <- UpSetR::fromList(Venn.set)
+  UpSetR::upset(
+    mat,
+    nsets = ncol(mat),
+    nintersects = NA,
+    text.scale = 2,
+    sets.x.label = "Number of discoveries"  # ✅ replaces "Set Size"
+  )
 
   # Figure b ----
   rm(list = ls())
@@ -52,9 +57,9 @@
   L <- length(data.rel)
 
   ## Align figures
-  pdf("./Figure/Figure4_b.pdf", width = 12.45, height = 3.13, bg = "white")
+  pdf("./Figure/Figure4_b.pdf", width = 14.45, height = 3.13, bg = "white")
 
-  par(mfrow = c(1, 4), mar = c(2, 2, 2, 0.2), oma = c(0, 0, 0, 0))
+  par(mfrow = c(1, 5), mar = c(2, 2, 2, 0.2), oma = c(0, 0, 0, 0))
 
   ## PALM v.s. ANCOM-BC2
   data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(qval.het)) %>%
@@ -64,6 +69,16 @@
        ylab = "",
        xlab = "",
        col = "blue", pch = 18, mgp=c(2,0.5,0),
+       cex.axis = 1.6,  cex.lab = 1.6)
+  abline(0, 1, col = "brown", lty = 2)
+
+  ## PALM v.s. DESeq2
+  data.plot <- PALM.res %>% dplyr::transmute(feature = feature, pval.y = -log10(qval.het)) %>%
+    dplyr::left_join(DESeq2.res %>% dplyr::transmute(feature = features, pval.x = -log10(qval.het)), by = "feature") %>%
+    dplyr::filter(!is.na(pval.x))
+
+  plot(data.plot$pval.x, data.plot$pval.y, ylab = " ", xlab = "",
+       col = "#DDA0DD", pch = 18, mgp=c(2,0.5,0),  yaxt = "n",
        cex.axis = 1.6,  cex.lab = 1.6)
   abline(0, 1, col = "brown", lty = 2)
 
@@ -113,14 +128,17 @@
 
   taxa.id.sig <- intersect(
     intersect(
+    intersect(
       intersect(
         intersect(PALM.res$feature[PALM.res$qval <= target.fdr & !is.na(PALM.res$qval)],
                   ANCOMBC2.res$features[ANCOMBC2.res$qval <= target.fdr & !is.na(ANCOMBC2.res$qval)]),
         Maaslin2.res$features[Maaslin2.res$qval <= target.fdr & !is.na(Maaslin2.res$qval)]),
       lmclr.res$features[lmclr.res$qval <= target.fdr & !is.na(lmclr.res$qval)]),
-    Linda.res$features[Linda.res$qval <= target.fdr & !is.na(Linda.res$qval)])
+    Linda.res$features[Linda.res$qval <= target.fdr & !is.na(Linda.res$qval)]),
+    DESeq2.res$features[DESeq2.res$qval <= target.fdr & !is.na(DESeq2.res$qval)])
 
   taxa.id.het <-  unique(c(ANCOMBC2.res$features[ANCOMBC2.res$qval.het <= target.pval.fdr & !is.na(ANCOMBC2.res$qval.het)],
+                           DESeq2.res$features[DESeq2.res$qval.het <= target.pval.fdr & !is.na(DESeq2.res$qval.het)],
                            PALM.res$feature[PALM.res$qval.het <= target.pval.fdr & !is.na(PALM.res$qval.het)],
                            Maaslin2.res$features[Maaslin2.res$qval.het <= target.pval.fdr & !is.na(Maaslin2.res$qval.het)],
                            lmclr.res$features[lmclr.res$qval.het <= target.pval.fdr & !is.na(lmclr.res$qval.het)],
@@ -134,7 +152,8 @@
                           unique(c(ANCOMBC2.res$features[ANCOMBC2.res$qval <= target.fdr & !is.na(ANCOMBC2.res$qval)],
                                    Maaslin2.res$features[Maaslin2.res$qval <= target.fdr & !is.na(Maaslin2.res$qval)],
                                    lmclr.res$features[lmclr.res$qval <= target.fdr & !is.na(lmclr.res$qval)],
-                                   Linda.res$features[Linda.res$qval <= target.fdr & !is.na(Linda.res$qval)])))
+                                   Linda.res$features[Linda.res$qval <= target.fdr & !is.na(Linda.res$qval)],
+                                   DESeq2.res$features[DESeq2.res$qval <= target.fdr & !is.na(DESeq2.res$qval)])))
 
   taxa.id.palm <- taxa.id.palm[order(PALM.res$coef[PALM.res$feature %in% taxa.id.palm])]
 
@@ -169,7 +188,7 @@
     sp_strs[[l]] <- strs
   }
   renames <- sub("<i></i>", "", unlist(lapply(sp_strs, paste0, collapse=" ")))
-  renames <- paste0(renames, " (",sub("]",")", sub(".*v2_", "", taxa.id.all),")"))
+  renames <- paste0(renames, " (",sub("]",")", sub(".*v2_", "", taxa.id.all)))
   renames[renames == " <i>Clostridium</i> (0860)"] <- " <i>Clostridium</i> species (0860)"
   names(renames) <- taxa.id.all
 
@@ -228,6 +247,61 @@
                                                  xmax = as.numeric(species) + 0.5,
                                                  ymin = -Inf, ymax = Inf),
                                              fill = "yellow", alpha = 0.2)
+  }
+
+  ## DESeq2
+  colnames(DESeq2.model$est) <- paste0("CRC", 1:5)
+  qvals <- p.adjust(DESeq2.res[,"pval.het"], method = "fdr")
+  names(qvals) <- DESeq2.res$feature
+  df.plot <- NULL
+  df.area <- NULL
+  for(l in taxa.id.all){
+    df.plot <- rbind(df.plot, tibble(species = factor(renames[l], levels= renames),
+                                     Study = factor(colnames(DESeq2.model$est),
+                                                    levels = paste0("CRC", 5:1)),
+                                     AA = DESeq2.model$est[l,],
+                                     AA.lower = DESeq2.model$est[l,] - 1.96 * sqrt(DESeq2.model$var[l,]),
+                                     AA.upper = DESeq2.model$est[l,] + 1.96 * sqrt(DESeq2.model$var[l,])))
+    if(qvals[l] <= target.pval.fdr){
+      df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
+                                       AA = DESeq2.res[l,"est"]))
+    }
+  }
+
+  g.DESeq2.c <- df.plot %>%
+    ggplot(aes(x=species, y=AA)) +
+    geom_errorbar(aes(ymin = AA.lower, ymax = AA.upper, group = Study),
+                  position = position_dodge(width = 0.6),
+                  width = 0, linewidth = 0.5) +
+    geom_point(pch = 18, aes(color = Study),
+               size = 2.5, position = position_dodge(width = 0.6)) +
+    theme_minimal() + ylab("DESeq2\nassociation effect") +
+    scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
+                       breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
+    coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
+    ylim(-10, 10) +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          panel.background = element_rect(fill=NULL, colour='black', linewidth = 1),
+          axis.text.y = element_blank(),
+          axis.text.x =  element_blank(),
+
+          legend.title = element_text(hjust = 0.5, size = 16),
+          legend.text = element_text(size = 13),
+          legend.position = "none",
+          legend.direction = "vertical",
+          legend.box = "vertical",
+          strip.text = element_blank()) +
+    guides(color = guide_legend(reverse=T))
+
+  if(!is.null(df.area)){
+    g.DESeq2.c <- g.DESeq2.c + geom_rect(data = df.area,
+                                         aes(xmin = as.numeric(species) - 0.5,
+                                             xmax = as.numeric(species) + 0.5,
+                                             ymin = -Inf, ymax = Inf),
+                                         fill = "yellow", alpha = 0.2)
   }
 
   ## LinDA
@@ -373,7 +447,7 @@
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-0.08, 0.08) +
+    ylim(-0.12, 0.08) +
     theme(axis.title.x = element_blank(),
           axis.title.y = element_blank(),
           axis.ticks = element_blank(),
@@ -487,7 +561,7 @@
     sp_strs[[l]] <- strs
   }
   renames <- sub("<i></i>", "", unlist(lapply(sp_strs, paste0, collapse=" ")))
-  renames <- paste0(renames, " (",sub("]",")", sub(".*v2_", "", taxa.id.palm),")"))
+  renames <- paste0(renames, " (",sub("]",")", sub(".*v2_", "", taxa.id.palm)))
   renames[renames == " <i>Clostridium</i> (0860)"] <- " <i>Clostridium</i> species (0860)"
   names(renames) <- taxa.id.palm
 
@@ -545,6 +619,61 @@
                                                  xmax = as.numeric(species) + 0.5,
                                                  ymin = -Inf, ymax = Inf),
                                              fill = "yellow", alpha = 0.2)
+  }
+
+  ## DESeq2
+  colnames(DESeq2.model$est) <- paste0("CRC", 1:5)
+  qvals <- p.adjust(DESeq2.res[,"pval.het"], method = "fdr")
+  names(qvals) <- DESeq2.res$feature
+  df.plot <- NULL
+  df.area <- NULL
+  for(l in taxa.id.palm){
+    df.plot <- rbind(df.plot, tibble(species = factor(renames[l], levels= renames),
+                                     Study = factor(colnames(DESeq2.model$est),
+                                                    levels = paste0("CRC", 5:1)),
+                                     AA = DESeq2.model$est[l,],
+                                     AA.lower = DESeq2.model$est[l,] - 1.96 * sqrt(DESeq2.model$var[l,]),
+                                     AA.upper = DESeq2.model$est[l,] + 1.96 * sqrt(DESeq2.model$var[l,])))
+    if(qvals[l] <= target.pval.fdr){
+      df.area <- rbind(df.area, tibble(species = factor(renames[l], levels= renames),
+                                       AA = DESeq2.res[l,"est"]))
+    }
+  }
+
+  g.DESeq2.d <- df.plot %>%
+    ggplot(aes(x=species, y=AA)) +
+    geom_errorbar(aes(ymin = AA.lower, ymax = AA.upper, group = Study),
+                  position = position_dodge(width = 0.6),
+                  width = 0, linewidth = 0.5) +
+    geom_point(pch = 18, aes(color = Study),
+               size = 2.5, position = position_dodge(width = 0.6)) +
+    theme_minimal() + ylab("DESeq2\nassociation effect") +
+    scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
+                       breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
+    coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
+    ylim(-10, 10) +
+    theme(axis.title.x = element_text(size = 15),
+          axis.title.y = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          panel.background = element_rect(fill=NULL, colour='black', linewidth = 1),
+          axis.text.y = element_blank(),
+          axis.text.x =  element_text(size = 15),
+
+          legend.title = element_text(hjust = 0.5, size = 16),
+          legend.text = element_text(size = 13),
+          legend.position = "none",
+          legend.direction = "vertical",
+          legend.box = "vertical",
+          strip.text = element_blank()) +
+    guides(color = guide_legend(reverse=T))
+
+  if(!is.null(df.area)){
+    g.DESeq2.d <- g.DESeq2.d + geom_rect(data = df.area,
+                                         aes(xmin = as.numeric(species) - 0.5,
+                                             xmax = as.numeric(species) + 0.5,
+                                             ymin = -Inf, ymax = Inf),
+                                         fill = "yellow", alpha = 0.2)
   }
 
   ## LinDA
@@ -690,7 +819,7 @@
     scale_color_manual(values = c("#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"),
                        breaks = c("CRC5", "CRC4", "CRC3", "CRC2", "CRC1")) +
     coord_flip() + geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
-    ylim(-0.08, 0.08) +
+    ylim(-0.12, 0.08) +
     theme(axis.title.x = element_text(size = 15),
           axis.title.y = element_blank(),
           axis.ticks = element_blank(),
@@ -773,14 +902,15 @@
   }
 
   ## plots
-  pdf("./Figure/Figure4_c.pdf", width = 20.75, height = 10, bg = "white")
+  pdf("./Figure/Figure4_c.pdf", width = 24.75, height = 10, bg = "white")
 
-  plot_grid(plot_grid(g.ANCOMBC2.c, g.ANCOMBC2.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.3)),
-            plot_grid(g.LinDA.c, g.LinDA.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.3)),
-            plot_grid(g.lmclr.c, g.lmclr.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.3)),
-            plot_grid(g.Maaslin2.c, g.Maaslin2.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.3)),
-            plot_grid(g.PALM.c, g.PALM.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.3)),
-            ncol = 5, align = 'h', rel_widths = c(0.2, 0.1, 0.1, 0.1, 0.1))
+  plot_grid(plot_grid(g.ANCOMBC2.c, g.ANCOMBC2.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.2)),
+            plot_grid(g.DESeq2.c, g.DESeq2.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.2)),
+            plot_grid(g.LinDA.c, g.LinDA.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.2)),
+            plot_grid(g.lmclr.c, g.lmclr.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.2)),
+            plot_grid(g.Maaslin2.c, g.Maaslin2.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.2)),
+            plot_grid(g.PALM.c, g.PALM.d, nrow = 2, align = 'v', rel_heights = c(0.7, 0.2)),
+            ncol = 6, align = 'h', rel_widths = c(0.2, 0.1, 0.1, 0.1, 0.1, 0.1))
 
 
   dev.off()

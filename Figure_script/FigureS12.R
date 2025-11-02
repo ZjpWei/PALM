@@ -1,5 +1,5 @@
 # =============================================== #
-#                   Figure 1                      #
+#                   Figure S12                    #
 # =============================================== #
 
   # Packages ----
@@ -13,6 +13,7 @@
 
   # Setup path.
   data.loc <- "./Simulation/Independent/"
+  data.loc.1 <- "./Simulation/PALM_tuned/"
 
   PRC_all <- NULL
   for(pos.lst in c(0.5, 1)){
@@ -23,19 +24,19 @@
           if(file.exists(paste0(data.loc, "Sim_Ka", tag, "_Pos", pos.lst, "_mu", u.lst, "_", as.character(s), ".Rdata"))){
             load(paste0(data.loc, "Sim_Ka", tag, "_Pos", pos.lst, "_mu", u.lst, "_", as.character(s), ".Rdata"))
             PRC$ep.fdr[is.na(PRC$ep.fdr)] <- 0
+            PRC <- PRC %>% dplyr::filter(method == "PALM")
+            PRC_tmp <- rbind(PRC_tmp, PRC)
+          }
+          if(file.exists(paste0(data.loc.1, "Sim_Ka", tag, "_Pos", pos.lst, "_mu", u.lst, "_", as.character(s), ".Rdata"))){
+            load(paste0(data.loc.1, "Sim_Ka", tag, "_Pos", pos.lst, "_mu", u.lst, "_", as.character(s), ".Rdata"))
+            PRC$ep.fdr[is.na(PRC$ep.fdr)] <- 0
             PRC_tmp <- rbind(PRC_tmp, PRC)
           }
         }
         tmp.prc <- data.frame(PRC_tmp) %>% group_by(method, Settings, tax.type, Study) %>%
           summarize(FDR = mean(ep.fdr, na.rm = TRUE), sd.FDR = sd(ep.fdr, na.rm = TRUE),
                     Power = mean(ep.power, na.rm = TRUE), sd.Power = sd(ep.power, na.rm = TRUE),
-                    het = mean(ep.het.fdr, na.rm = TRUE), sd.het = sd(ep.het.fdr, na.rm = TRUE),
-                    FDR.a = mean(ep.a.fdr, na.rm = TRUE), sd.FDR.a = sd(ep.a.fdr, na.rm = TRUE),
-                    Power.a = mean(ep.a.power, na.rm = TRUE), sd.Power.a = sd(ep.a.power, na.rm = TRUE),
-                    het.a = mean(ep.a.het.fdr, na.rm = TRUE), sd.het.a = sd(ep.a.het.fdr, na.rm = TRUE),
-                    FDR.l = mean(ep.l.fdr, na.rm = TRUE), sd.FDR.l = sd(ep.l.fdr, na.rm = TRUE),
-                    Power.l = mean(ep.l.power, na.rm = TRUE), sd.Power.l = sd(ep.l.power, na.rm = TRUE),
-                    het.l = mean(ep.l.het.fdr, na.rm = TRUE), sd.het.l = sd(ep.l.het.fdr, na.rm = TRUE))
+                    het = mean(ep.het.fdr, na.rm = TRUE), sd.het = sd(ep.het.fdr, na.rm = TRUE))
         tmp.prc$x.label <- tag
         if(pos.lst == 0.5){
           tmp.prc$pos <- paste0("Balanced +/-")
@@ -51,8 +52,9 @@
       }
     }
   }
+  PRC_all$method[PRC_all$method == "PALM.tuned"] <- "PALM.tunedBC"
   PRC_all$x.label <- factor(PRC_all$x.label, levels = unique(PRC_all$x.label), ordered = TRUE)
-  PRC_all$Method <- factor(PRC_all$method, levels = c("ANCOM-BC2", "LinDA", "LM-CLR", "MaAsLin2", "DESeq2", "PALM"), ordered = TRUE)
+  PRC_all$Method <- factor(PRC_all$method, levels = c("PALM", "PALM.tunedBC"), ordered = TRUE)
 
   ## Generate figures large/species
   p.large.fdr.species <- PRC_all %>% dplyr::filter(Settings == "large", tax.type == "species", Study == "meta") %>%
@@ -65,8 +67,7 @@
     geom_errorbar(aes(ymin = pmax(FDR - sd.FDR, 0), ymax = pmin(FDR + sd.FDR, 1), color = Method), width = 0.3,
                   position = position_dodge(width = 0.3)) + ylim(0, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -92,11 +93,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.5), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0.5, 1) +
+    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.4), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3)) + ylim(0.4, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -122,11 +122,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.4), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylab("Proportion of het. features") + ylim(0, 0.4) +
+    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.6), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3)) + ylab("Proportion of het. features") + ylim(0, 0.6) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -157,8 +156,7 @@
     geom_errorbar(aes(ymin = pmax(FDR - sd.FDR, 0), ymax = pmin(FDR + sd.FDR, 1), color = Method), width = 0.3,
                   position = position_dodge(width = 0.3)) + ylim(0, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -184,11 +182,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.5), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0.5, 1) +
+    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.4), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3)) + ylim(0.4, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -214,11 +211,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.4), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylab("Proportion of het. features") + ylim(0, 0.4) +
+    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.6), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3)) + ylab("Proportion of het. features") + ylim(0, 0.6) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -249,8 +245,7 @@
     geom_errorbar(aes(ymin = pmax(FDR - sd.FDR, 0), ymax = pmin(FDR + sd.FDR, 1), color = Method), width = 0.3,
                   position = position_dodge(width = 0.3)) + ylim(0, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -276,11 +271,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.5), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0.5, 1) +
+    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.4), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3)) + ylim(0.4, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -306,11 +300,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.4), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylab("Proportion of het. features") + ylim(0, 0.4) +
+    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.6), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3)) + ylab("Proportion of het. features") + ylim(0, 0.6) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -341,8 +334,7 @@
     geom_errorbar(aes(ymin = pmax(FDR - sd.FDR, 0), ymax = pmin(FDR + sd.FDR, 1), color = Method), width = 0.3,
                   position = position_dodge(width = 0.3)) + ylim(0, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -368,11 +360,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.5), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0.5, 1) +
+    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.4), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3)) + ylim(0.4, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -398,11 +389,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.4), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) +  ylab("Proportion of het. features") + ylim(0, 0.4) +
+    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.6), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3)) +  ylab("Proportion of het. features") + ylim(0, 0.6) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM.tunedBC"), values = c("red","red4")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -444,22 +434,20 @@
     left = ggpubr::text_grob("Proportion of het. features", size = 20, rot = 90, hjust = 0.4, face = "bold"),
   )
 
-
-  pdf("./Figure/Figure1_FDR.pdf", width = 21, height = 5.6, bg = "white")
+  pdf("./Figure/FigureS12_FDR.pdf", width = 21, height = 5.6, bg = "white")
 
   pp1_1
 
   dev.off()
 
-  pdf("./Figure/Figure1_Power.pdf", width = 21, height = 5.6, bg = "white")
+  pdf("./Figure/FigureS12_Power.pdf", width = 21, height = 5.6, bg = "white")
 
   pp1_2
 
   dev.off()
 
-  pdf("./Figure/Figure1_het.pdf", width = 21, height = 5.6, bg = "white")
+  pdf("./Figure/FigureS12_het.pdf", width = 21, height = 5.6, bg = "white")
 
   pp1_3
 
   dev.off()
-

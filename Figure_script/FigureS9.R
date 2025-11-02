@@ -1,458 +1,373 @@
 # =============================================== #
-#                   Figure S9                     #
+#         FigureS9: Metabolite HMDB0000619        #
 # =============================================== #
 
-  # Packages ----
-  library('ggplot2')
+  # Package ----
   library("tidyverse")
-  library("latex2exp")
+  library("plotly")
+  library("tidyr")
+  library("dplyr")
+  library("ggplot2")
+  library("grid")
   library("ggtext")
+  library("cowplot")
 
-  # Main ----
   rm(list = ls())
 
-  # Setup path.
-  data.loc <- "./Simulation/Poisson/"
+  selected.lst <- "HMDB0000619"
+  load("./Metabolites/Output/MTBL_PALM.Rdata")
+  load(paste0("./Metabolites/Output/Metabolites/Compare_method_", selected.lst, ".Rdata"))
+  study.id <- which(apply(ANCOMBC2.est, 2, function(d){return(!all(is.na(d)))}))
+  study.names <- names(study.id)
+  target.fdr <- 0.05
+  target.get.fdr <- 0.1
 
-  PRC_all <- NULL
-  for(pos.lst in c(0.5, 1)){
-    for(u.lst in c(0, 1)){
-      for(tag in c(0.05, 0.1, 0.15, 0.2)){
-        PRC_tmp <- NULL
-        for(s in 1:100){
-          if(file.exists(paste0(data.loc, "Sim_Ka", tag, "_Pos", pos.lst, "_mu", u.lst, "_", as.character(s), ".Rdata"))){
-            load(paste0(data.loc, "Sim_Ka", tag, "_Pos", pos.lst, "_mu", u.lst, "_", as.character(s), ".Rdata"))
-            PRC$ep.fdr[is.na(PRC$ep.fdr)] <- 0
-            PRC_tmp <- rbind(PRC_tmp, PRC)
-          }
-        }
-        tmp.prc <- data.frame(PRC_tmp) %>% group_by(method, Settings, tax.type, Study) %>%
-          summarize(FDR = mean(ep.fdr), sd.FDR = sd(ep.fdr),
-                    Power = mean(ep.power), sd.Power = sd(ep.power),
-                    het = mean(ep.het.fdr), sd.het = sd(ep.het.fdr))
-        tmp.prc$x.label <- tag
-        if(pos.lst == 0.5){
-          tmp.prc$pos <- paste0("Balanced +/-")
-        }else if(pos.lst == 1){
-          tmp.prc$pos <- paste0("Dominant +")
-        }
-        if(u.lst == 0){
-          tmp.prc$u <- paste0("Even depth")
-        }else if(u.lst == 1){
-          tmp.prc$u <- paste0("Uneven depth")
-        }
-        PRC_all <- rbind(PRC_all, tmp.prc)
-      }
-    }
+  ## PALM
+  PALM.df <- PALM.test[[selected.lst]]
+  PALM.df <- PALM.df %>% dplyr::mutate(feature = gsub(".*;g__","",feature)) %>%
+    tibble::column_to_rownames("feature")
+
+  ## ANCOM-BC2
+  ANCOMBC2.df <- ANCOMBC2.meta.coef %>% dplyr::select(feature, coef = selected.lst) %>%
+    dplyr::left_join(
+      ANCOMBC2.meta.pval %>% dplyr::select(feature, pval = selected.lst) %>%
+        dplyr::mutate(qval = p.adjust(pval, method = "fdr")), by = "feature") %>%
+    dplyr::left_join(
+      ANCOMBC2.meta.pval.het %>% dplyr::select(feature, het.pval = selected.lst) %>%
+        dplyr::mutate(het.qval = p.adjust(het.pval, method = "fdr")), by = "feature") %>%
+    dplyr::left_join(
+      data.frame(ANCOMBC2.est[,study.id]) %>%
+        dplyr::rename_with(~ paste0(., ":est")) %>% tibble::rownames_to_column("feature")
+    ) %>% dplyr::left_join(
+      data.frame(sqrt(ANCOMBC2.var)[,apply(ANCOMBC2.var, 2, function(d){return(!all(is.na(d)))})]) %>%
+        dplyr::rename_with(~ paste0(., ":std")) %>% tibble::rownames_to_column("feature")
+    ) %>% dplyr::mutate(feature = gsub(".*;g__","",feature)) %>% tibble::column_to_rownames("feature")
+
+  ## MaAsLin2
+  Maaslin2.df <- Maaslin2.meta.coef %>% dplyr::select(feature, coef = selected.lst) %>%
+    dplyr::left_join(
+      Maaslin2.meta.pval %>% dplyr::select(feature, pval = selected.lst) %>%
+        dplyr::mutate(qval = p.adjust(pval, method = "fdr")), by = "feature") %>%
+    dplyr::left_join(
+      Maaslin2.meta.pval.het %>% dplyr::select(feature, het.pval = selected.lst) %>%
+        dplyr::mutate(het.qval = p.adjust(het.pval, method = "fdr")), by = "feature") %>%
+    dplyr::left_join(
+      data.frame(Maaslin2.est[,study.id]) %>%
+        dplyr::rename_with(~ paste0(., ":est")) %>% tibble::rownames_to_column("feature")
+    ) %>% dplyr::left_join(
+      data.frame(sqrt(Maaslin2.var)[,apply(Maaslin2.var, 2, function(d){return(!all(is.na(d)))})]) %>%
+        dplyr::rename_with(~ paste0(., ":std")) %>% tibble::rownames_to_column("feature")
+    ) %>% dplyr::mutate(feature = gsub(".*;g__","",feature)) %>% tibble::column_to_rownames("feature")
+
+  ## LM-CLR
+  LMCLR.df <- LMCLR.meta.coef %>% dplyr::select(feature, coef = selected.lst) %>%
+    dplyr::left_join(
+      LMCLR.meta.pval %>% dplyr::select(feature, pval = selected.lst) %>%
+        dplyr::mutate(qval = p.adjust(pval, method = "fdr")), by = "feature") %>%
+    dplyr::left_join(
+      LMCLR.meta.pval.het %>% dplyr::select(feature, het.pval = selected.lst) %>%
+        dplyr::mutate(het.qval = p.adjust(het.pval, method = "fdr")), by = "feature") %>%
+    dplyr::left_join(
+      data.frame(LMCLR.est[,study.id]) %>%
+        dplyr::rename_with(~ paste0(., ":est")) %>% tibble::rownames_to_column("feature")
+    ) %>% dplyr::left_join(
+      data.frame(sqrt(LMCLR.var)[,apply(LMCLR.var, 2, function(d){return(!all(is.na(d)))})]) %>%
+        dplyr::rename_with(~ paste0(., ":std")) %>% tibble::rownames_to_column("feature")
+    ) %>% dplyr::mutate(feature = gsub(".*;g__","",feature)) %>% tibble::column_to_rownames("feature")
+
+  ## LinDA
+  Linda.df <- Linda.meta.coef %>% dplyr::select(feature, coef = selected.lst) %>%
+    dplyr::left_join(
+      Linda.meta.pval %>% dplyr::select(feature, pval = selected.lst) %>%
+        dplyr::mutate(qval = p.adjust(pval, method = "fdr")), by = "feature") %>%
+    dplyr::left_join(
+      Linda.meta.pval.het %>% dplyr::select(feature, het.pval = selected.lst) %>%
+        dplyr::mutate(het.qval = p.adjust(het.pval, method = "fdr")), by = "feature") %>%
+    dplyr::left_join(
+      data.frame(LinDA.est[,study.id]) %>%
+        dplyr::rename_with(~ paste0(., ":est")) %>% tibble::rownames_to_column("feature")
+    ) %>% dplyr::left_join(
+      data.frame(sqrt(LinDA.var)[,apply(LinDA.var, 2, function(d){return(!all(is.na(d)))})]) %>%
+        dplyr::rename_with(~ paste0(., ":std")) %>% tibble::rownames_to_column("feature")
+    ) %>% dplyr::mutate(feature = gsub(".*;g__","",feature)) %>% tibble::column_to_rownames("feature")
+
+  ##@ Metabolite information
+  source("./utility/hmdb_utils.R")
+  hmdb.ids <- selected.lst
+  hmdb.data <- get.hmdb.data.by.ids(hmdb.ids)
+  hmdb.data <- hmdb.data %>% rename(Compound = HMDB)
+
+  genus.lst <- rownames(PALM.df)[PALM.df$qval <= target.fdr & ANCOMBC2.df$qval <= target.fdr &
+                                 Maaslin2.df$qval <= target.fdr & Linda.df$qval <= target.fdr &
+                                 LMCLR.df$qval <= target.fdr]
+
+  genus.lst <- genus.lst[order(PALM.df[genus.lst, "coef"])]
+
+  # PALM plots ----
+  df.plot <- NULL
+  for(l in study.names){
+    df.plot <- rbind(df.plot, tibble(genus = factor(genus.lst, levels= genus.lst),
+                                     Study = factor(rep(l, length(genus.lst)), levels = study.names,
+                                                    labels = paste0("MTBL", rev(study.id))),
+                                     AA = PALM.df[genus.lst, paste0(l,"_effect")],
+                                     AA.lower = PALM.df[genus.lst, paste0(l,"_effect")] - 1.96 * PALM.df[genus.lst, paste0(l,"_stderr")],
+                                     AA.upper = PALM.df[genus.lst, paste0(l,"_effect")] + 1.96 * PALM.df[genus.lst, paste0(l,"_stderr")]))
   }
-  PRC_all$x.label <- factor(PRC_all$x.label, levels = unique(PRC_all$x.label), ordered = TRUE)
-  PRC_all$Method <- factor(PRC_all$method, levels = c("CPLM", "DESeq2", "GLM-QP", "PALM"), ordered = TRUE)
+  df.area <- tibble(genus = factor(genus.lst[PALM.df[genus.lst, "qval.het"] <= target.get.fdr],
+                                   levels= genus.lst), AA = Inf)
 
-  ## Generate figures large/species
-  p.large.fdr.species <- PRC_all %>% dplyr::filter(Settings == "large", tax.type == "species", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=FDR, group = Method)) +
-    geom_hline(aes(yintercept = 0.05),colour="#990000", linetype="dashed") +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(FDR - sd.FDR, 0), ymax = pmin(FDR + sd.FDR, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0, 1) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+  g.PALM.c <- df.plot %>%
+    ggplot(aes(x=genus, y=AA)) +
+    geom_errorbar(aes(ymin = AA.lower, ymax = AA.upper, group = Study),
+                  position = position_dodge(width = 0.6),
+                  width = 0, linewidth = 0.5) +
+    geom_point(pch = 18, aes(color = Study),
+               size = 2.5, position = position_dodge(width = 0.6)) +
+    ylab("PALM\nassociation effect") + xlab("Genus") +
+    geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
+    scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
+                                  "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
+                       breaks = c("MTBL8", "MTBL7", "MTBL6", "MTBL5",
+                                  "MTBL4", "MTBL3", "MTBL2", "MTBL1")) +
+    coord_flip() + theme_minimal() + ylim(-2.5, 3) +
+    theme(axis.title.x = element_text(size = 15),
+          axis.title.y = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          panel.background = element_rect(fill=NULL, colour='black', linewidth = 1),
+          axis.text.y = element_blank(),
+          axis.text.x =  element_text(size = 15),
 
-  p.large.pw.species <- PRC_all %>% dplyr::filter(Settings == "large", tax.type == "species", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=Power, group = Method)) +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.5), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0.5, 1) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+          legend.title = element_text(hjust = 0.5, size = 16),
+          legend.text = element_text(size = 13),
+          legend.position = c(0.2, 0.9),
+          legend.direction = "vertical",
+          legend.box = "vertical",
+          strip.text = element_blank()) +
+    guides(color = guide_legend(reverse=T))
 
-  p.large.het.species <- PRC_all %>% dplyr::filter(Settings == "large", tax.type == "species", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=het, group = Method)) +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.15), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylab("Proportion of het. features") + ylim(0, 0.15) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+  if(nrow(df.area) != 0){
+    g.PALM.c <- g.PALM.c + geom_rect(data = df.area,
+                                     aes(xmin = as.numeric(genus) - 0.5,
+                                         xmax = as.numeric(genus) + 0.5,
+                                         ymin = -Inf, ymax = Inf),
+                                     fill = "yellow", alpha = 0.2)
+  }
 
-  ## Generate figures small/species
-  p.small.fdr.species <- PRC_all %>% dplyr::filter(Settings == "small", tax.type == "species", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=FDR, group = Method)) +
-    geom_hline(aes(yintercept = 0.05),colour="#990000", linetype="dashed") +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(FDR - sd.FDR, 0), ymax = pmin(FDR + sd.FDR, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0, 1) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
 
-  p.small.pw.species <- PRC_all %>% dplyr::filter(Settings == "small", tax.type == "species", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=Power, group = Method)) +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.5), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0.5, 1) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+  # MaAsLin2 plots ----
+  df.plot <- NULL
+  for(l in study.names){
+    df.plot <- rbind(df.plot, tibble(genus = factor(genus.lst, levels= genus.lst),
+                                     study = factor(rep(l, length(genus.lst)), levels = study.names,
+                                                    labels = paste0("MTBL", rev(study.id))),
+                                     AA = Maaslin2.df[genus.lst, paste0(l,":est")],
+                                     AA.lower = Maaslin2.df[genus.lst, paste0(l,":est")] - 1.96 * Maaslin2.df[genus.lst, paste0(l,":std")],
+                                     AA.upper = Maaslin2.df[genus.lst, paste0(l,":est")] + 1.96 * Maaslin2.df[genus.lst, paste0(l,":std")]))
+  }
+  df.area <- tibble(genus = factor(genus.lst[Maaslin2.df[genus.lst, "het.qval"] <= target.get.fdr],
+                                   levels= genus.lst), AA = Inf)
 
-  p.small.het.species <- PRC_all %>% dplyr::filter(Settings == "small", tax.type == "species", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=het, group = Method)) +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.15), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylab("Proportion of het. features") + ylim(0, 0.15) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+  g.MaAsLin2.c <- df.plot %>%
+    ggplot(aes(x=genus, y=AA)) +
+    geom_errorbar(aes(ymin = AA.lower, ymax = AA.upper, group = study),
+                  position = position_dodge(width = 0.6),
+                  width = 0, linewidth = 0.5) +
+    geom_point(pch = 18, aes(color = study),
+               size = 2.5, position = position_dodge(width = 0.6)) +
+    ylab("MaAsLin2\nassociation effect") + xlab("Genus") +
+    geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
+    scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
+                                  "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
+                       breaks = c("MTBL8", "MTBL7", "MTBL6", "MTBL5",
+                                  "MTBL4", "MTBL3", "MTBL2", "MTBL1")) +
+    coord_flip() +
+    theme_minimal() +
+    theme(axis.title.x = element_text(size = 15),
+          axis.title.y = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          panel.background = element_rect(fill=NULL, colour='black', linewidth = 1),
+          axis.text.y = element_blank(),
+          axis.text.x =  element_text(size = 15),
 
-  ## Generate figures large/genus
-  p.large.fdr.genus <- PRC_all %>% dplyr::filter(Settings == "large", tax.type == "genus", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=FDR, group = Method)) +
-    geom_hline(aes(yintercept = 0.05),colour="#990000", linetype="dashed") +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(FDR - sd.FDR, 0), ymax = pmin(FDR + sd.FDR, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0, 1) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+          legend.title = element_text(hjust = 0.5, size = 16),
+          legend.text = element_text(size = 13),
+          legend.position = "none",
+          legend.direction = "vertical",
+          legend.box = "vertical",
+          strip.text = element_blank()) +
+    guides(color = guide_legend(reverse=T))
 
-  p.large.pw.genus <- PRC_all %>% dplyr::filter(Settings == "large", tax.type == "genus", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=Power, group = Method)) +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.5), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0.5, 1) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+  if(nrow(df.area) != 0){
+    g.MaAsLin2.c <- g.MaAsLin2.c + geom_rect(data = df.area,
+                                             aes(xmin = as.numeric(genus) - 0.5,
+                                                 xmax = as.numeric(genus) + 0.5,
+                                                 ymin = -Inf, ymax = Inf),
+                                             fill = "yellow", alpha = 0.2)
+  }
 
-  p.large.het.genus <- PRC_all %>% dplyr::filter(Settings == "large", tax.type == "genus", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=het, group = Method)) +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.15), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylab("Proportion of het. features") + ylim(0, 0.15) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+  ## ANCOM-BC2
+  # MaAsLin2 plots ----
+  df.plot <- NULL
+  for(l in study.names){
+    df.plot <- rbind(df.plot, tibble(genus = factor(genus.lst, levels= genus.lst),
+                                     study = factor(rep(l, length(genus.lst)), levels = study.names,
+                                                    labels = paste0("MTBL", rev(study.id))),
+                                     AA = ANCOMBC2.df[genus.lst, paste0(l,":est")],
+                                     AA.lower = ANCOMBC2.df[genus.lst, paste0(l,":est")] - 1.96 * ANCOMBC2.df[genus.lst, paste0(l,":std")],
+                                     AA.upper = ANCOMBC2.df[genus.lst, paste0(l,":est")] + 1.96 * ANCOMBC2.df[genus.lst, paste0(l,":std")]))
+  }
+  df.area <- tibble(genus = factor(genus.lst[ANCOMBC2.df[genus.lst, "het.qval"] <= target.get.fdr],
+                                   levels= genus.lst), AA = Inf)
+  g.ANCOMBC2.c <- df.plot %>%
+    ggplot(aes(x=genus, y=AA)) +
+    geom_errorbar(aes(ymin = AA.lower, ymax = AA.upper, group = study),
+                  position = position_dodge(width = 0.6),
+                  width = 0, linewidth = 0.5) +
+    geom_point(pch = 18, aes(color = study),
+               size = 2.5, position = position_dodge(width = 0.6)) +
+    ylab("ANCOM-BC2\nassociation effect") + xlab("Genus") +
+    geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
+    scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
+                                  "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
+                       breaks = c("MTBL8", "MTBL7", "MTBL6", "MTBL5",
+                                  "MTBL4", "MTBL3", "MTBL2", "MTBL1")) +
+    coord_flip() +
+    theme_minimal() +
+    theme(axis.title.x = element_text(size = 15),
+          axis.title.y = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          panel.background = element_rect(fill=NULL, colour='black', linewidth = 1),
+          axis.text.y = element_markdown(size = 15),
+          axis.text.x =  element_text(size = 15),
 
-  ## Generate figures small/genus
-  p.small.fdr.genus <- PRC_all %>% dplyr::filter(Settings == "small", tax.type == "genus", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=FDR, group = Method)) +
-    geom_hline(aes(yintercept = 0.05),colour="#990000", linetype="dashed") +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(FDR - sd.FDR, 0), ymax = pmin(FDR + sd.FDR, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0, 1) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+          legend.title = element_text(hjust = 0.5, size = 16),
+          legend.text = element_text(size = 13),
+          legend.position = "none",
+          legend.direction = "vertical",
+          legend.box = "vertical",
+          strip.text = element_blank()) +
+    guides(color = guide_legend(reverse=T))
 
-  p.small.pw.genus <- PRC_all %>% dplyr::filter(Settings == "small", tax.type == "genus", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=Power, group = Method)) +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(Power - sd.Power, 0.5), ymax = pmin(Power + sd.Power, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) + ylim(0.5, 1) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DD", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+  if(nrow(df.area) != 0){
+    g.ANCOMBC2.c <- g.ANCOMBC2.c + geom_rect(data = df.area,
+                                             aes(xmin = as.numeric(genus) - 0.5,
+                                                 xmax = as.numeric(genus) + 0.5,
+                                                 ymin = -Inf, ymax = Inf),
+                                             fill = "yellow", alpha = 0.2)
+  }
 
-  p.small.het.genus <- PRC_all %>% dplyr::filter(Settings == "small", tax.type == "genus", Study == "meta") %>%
-    ggplot(aes(x=x.label, y=het, group = Method)) +
-    geom_line(linewidth = 0.7, aes(color=Method),
-              position = position_dodge(width = 0.3)) +
-    geom_point(size = 2,aes(color = Method), pch = 18,
-               position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(het - sd.het, 0), ymax = pmin(het + sd.het, 0.15), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3)) +  ylab("Proportion of het. features") + ylim(0, 0.15) +
-    scale_color_manual(
-      breaks = c("CPLM", "DESeq2", "GLM-QP", "PALM"),
-      values = c("#DDA0DE", "#4B0082", "cyan", "red")) +
-    theme_bw() +
-    theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
-          panel.grid.minor = element_blank(),
-          plot.title = element_blank(),
-          axis.title = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          axis.line = element_line(colour = "black"),
-          panel.background = element_rect(fill = 'white'),
-          legend.position ="bottom",
-          legend.box="vertical",
-          axis.text = element_text(size = 18),
-          legend.title = element_blank(),
-          legend.text = element_text(size = 18),
-          strip.text = element_markdown(size = 18),
-          legend.key.width = unit(1.5,"cm")) +
-    labs(linetype="Data") + facet_grid(u ~ pos) +
-    guides(color = guide_legend(order = 1, nrow = 1)) +
-    labs(linetype="Data")
+  # LinDA plots ----
+  df.plot <- NULL
+  for(l in study.names){
+    df.plot <- rbind(df.plot, tibble(genus = factor(genus.lst, levels= genus.lst),
+                                     study = factor(rep(l, length(genus.lst)), levels = study.names,
+                                                    labels = paste0("MTBL", rev(study.id))),
+                                     AA = Linda.df[genus.lst, paste0(l,":est")],
+                                     AA.lower = Linda.df[genus.lst, paste0(l,":est")] - 1.96 * Linda.df[genus.lst, paste0(l,":std")],
+                                     AA.upper = Linda.df[genus.lst, paste0(l,":est")] + 1.96 * Linda.df[genus.lst, paste0(l,":std")]))
+  }
+  df.area <- tibble(genus = factor(genus.lst[Linda.df[genus.lst, "het.qval"] <= target.get.fdr],
+                                   levels= genus.lst), AA = Inf)
+  g.Linda.c <- df.plot %>%
+    ggplot(aes(x=genus, y=AA)) +
+    geom_errorbar(aes(ymin = AA.lower, ymax = AA.upper, group = study),
+                  position = position_dodge(width = 0.6),
+                  width = 0, linewidth = 0.5) +
+    geom_point(pch = 18, aes(color = study),
+               size = 2.5, position = position_dodge(width = 0.6)) +
+    ylab("LinDA\nassociation effect") + xlab("Genus") +
+    geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
+    scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
+                                  "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
+                       breaks = c("MTBL8", "MTBL7", "MTBL6", "MTBL5",
+                                  "MTBL4", "MTBL3", "MTBL2", "MTBL1")) +
+    coord_flip() +
+    theme_minimal() +
+    theme(axis.title.x = element_text(size = 15),
+          axis.title.y = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          panel.background = element_rect(fill=NULL, colour='black', linewidth = 1),
+          axis.text.y = element_blank(),
+          axis.text.x =  element_text(size = 15),
 
-  # Generate figures ----
-  pp1_1 <- ggpubr::annotate_figure(
-    ggpubr::ggarrange(p.large.fdr.species, p.large.fdr.genus, p.small.fdr.species, p.small.fdr.genus,
-                      nrow = 1, ncol = 4,  common.legend = TRUE, legend = "none", label.y = "AUPRC"),
-    bottom = ggpubr::text_grob("Proportion of differential AA features", size = 20, face = "bold"),
-    left = ggpubr::text_grob("FDR", size = 20, rot = 90, hjust = 0.2, face = "bold"),
-  )
+          legend.title = element_text(hjust = 0.5, size = 16),
+          legend.text = element_text(size = 13),
+          legend.position = "none",
+          legend.direction = "vertical",
+          legend.box = "vertical",
+          strip.text = element_blank()) +
+    guides(color = guide_legend(reverse=T))
 
-  pp1_2 <- ggpubr::annotate_figure(
-    ggpubr::ggarrange(p.large.pw.species, p.large.pw.genus, p.small.pw.species, p.small.pw.genus,
-                      nrow = 1, ncol = 4,  common.legend = TRUE, legend = "none", label.y = "AUPRC"),
-    bottom = ggpubr::text_grob("Proportion of differential AA features", size = 20, face = "bold"),
-    left = ggpubr::text_grob("Power", size = 20, rot = 90, hjust = 0.2, face = "bold"),
-  )
+  if(nrow(df.area) != 0){
+    g.Linda.c <- g.Linda.c + geom_rect(data = df.area,
+                                       aes(xmin = as.numeric(genus) - 0.5,
+                                           xmax = as.numeric(genus) + 0.5,
+                                           ymin = -Inf, ymax = Inf),
+                                       fill = "yellow", alpha = 0.2)
+  }
 
-  pp1_3 <- ggpubr::annotate_figure(
-    ggpubr::ggarrange(p.large.het.species, p.large.het.genus, p.small.het.species, p.small.het.genus,
-                      nrow = 1, ncol = 4,  common.legend = TRUE, legend = "none", label.y = "AUPRC") ,
-    bottom = ggpubr::text_grob("Proportion of differential AA features", size = 20, face = "bold"),
-    left = ggpubr::text_grob("Proportion of het. features", size = 20, rot = 90, hjust = 0.4, face = "bold"),
-  )
+  # LM-CLR plots ----
+  df.plot <- NULL
+  for(l in study.names){
+    df.plot <- rbind(df.plot, tibble(genus = factor(genus.lst, levels= genus.lst),
+                                     study = factor(rep(l, length(genus.lst)), levels = study.names,
+                                                    labels = paste0("MTBL", rev(study.id))),
+                                     AA = LMCLR.df[genus.lst, paste0(l,":est")],
+                                     AA.lower = LMCLR.df[genus.lst, paste0(l,":est")] - 1.96 * LMCLR.df[genus.lst, paste0(l,":std")],
+                                     AA.upper = LMCLR.df[genus.lst, paste0(l,":est")] + 1.96 * LMCLR.df[genus.lst, paste0(l,":std")]))
+  }
+  df.area <- tibble(genus = factor(genus.lst[LMCLR.df[genus.lst, "het.qval"] <= target.get.fdr],
+                                   levels= genus.lst), AA = Inf)
+  g.LMCLR.c <- df.plot %>%
+    ggplot(aes(x=genus, y=AA)) +
+    geom_errorbar(aes(ymin = AA.lower, ymax = AA.upper, group = study),
+                  position = position_dodge(width = 0.6),
+                  width = 0, linewidth = 0.5) +
+    geom_point(pch = 18, aes(color = study),
+               size = 2.5, position = position_dodge(width = 0.6)) +
+    ylab("LM-CLR\nassociation effect") + xlab("Genus") +
+    scale_color_manual(values = c("#F8766D","#CD9600","#7CAE00","#00BE67",
+                                  "#00BFC4","#00A9FF","#C77CFF","#FF61CC"),
+                       breaks = c("MTBL8", "MTBL7", "MTBL6", "MTBL5",
+                                  "MTBL4", "MTBL3", "MTBL2", "MTBL1")) +
+    geom_hline(aes(yintercept = 0),colour="#990000", linetype="dashed") +
+    coord_flip() +
+    theme_minimal() +
+    theme(axis.title.x = element_text(size = 15),
+          axis.title.y = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          panel.background = element_rect(fill=NULL, colour='black', linewidth = 1),
+          axis.text.y = element_blank(),
+          axis.text.x =  element_text(size = 15),
 
-  pdf("./Figure/FigureS9_FDR.pdf", width = 21, height = 5.6, bg = "white")
+          legend.title = element_text(hjust = 0.5, size = 16),
+          legend.text = element_text(size = 13),
+          legend.position = "none",
+          legend.direction = "vertical",
+          legend.box = "vertical",
+          strip.text = element_blank()) +
+    guides(color = guide_legend(reverse=T))
 
-  pp1_1
+  if(nrow(df.area) != 0){
+    g.LMCLR.c <- g.LMCLR.c + geom_rect(data = df.area,
+                                       aes(xmin = as.numeric(genus) - 0.5,
+                                           xmax = as.numeric(genus) + 0.5,
+                                           ymin = -Inf, ymax = Inf),
+                                       fill = "yellow", alpha = 0.2)
+  }
 
-  dev.off()
 
-  pdf("./Figure/FigureS9_Power.pdf", width = 21, height = 5.6, bg = "white")
+  pp_c <- plot_grid(g.ANCOMBC2.c, g.Linda.c,g.LMCLR.c, g.MaAsLin2.c, g.PALM.c,
+                    ncol = 5, align = 'h', rel_widths = c(0.2, 0.12, 0.12, 0.12, 0.12))
 
-  pp1_2
+  pdf("./Figure/FigureS9.pdf", width = 17.60, height = 12, bg = "white")
 
-  dev.off()
-
-  pdf("./Figure/FigureS9_het.pdf", width = 21, height = 5.6, bg = "white")
-
-  pp1_3
+  pp_c
 
   dev.off()
 

@@ -1,5 +1,5 @@
 # =============================================== #
-#                   Figure S4                     #
+#                   Figure S14                    #
 # =============================================== #
 
   # Packages ----
@@ -22,7 +22,8 @@
         for(s in 1:100){
           if(file.exists(paste0(data.loc, "Sim_Ka", tag, "_Pos", pos.lst, "_mu", u.lst, "_", as.character(s), ".Rdata"))){
             load(paste0(data.loc, "Sim_Ka", tag, "_Pos", pos.lst, "_mu", u.lst, "_", as.character(s), ".Rdata"))
-            PRC <- PRC[PRC$method != "PALM.tuned" & PRC$method != "PALM.wald" ,]
+            PRC <- PRC[PRC$method == "PALM" | PRC$method == "PALM.wald" ,]
+            PRC$method[PRC$method == "PALM.wald"] <- "PALM-Wald"
             PRC_tmp <- rbind(PRC_tmp, PRC)
           }
         }
@@ -45,7 +46,7 @@
     }
   }
   PRC_all$x.label <- factor(PRC_all$x.label, levels = unique(PRC_all$x.label), ordered = TRUE)
-  PRC_all$Method <- factor(PRC_all$method, levels = c("ANCOM-BC2", "DESeq2", "LinDA", "LM-CLR", "MaAsLin2", "PALM"), ordered = TRUE)
+  PRC_all$Method <- factor(PRC_all$method, levels = c("PALM", 'PALM-Wald'), ordered = TRUE)
 
   ## Generate figures large/species
   p.large.fdr.species <- PRC_all %>% dplyr::filter(Settings == "large", tax.type == "species") %>%
@@ -54,11 +55,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(ep.AUPRC - sd.AUPRC, 0.3), ymax = pmin(ep.AUPRC + sd.AUPRC, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3))  + ylim(0.3, 1) +
+    geom_errorbar(aes(ymin = pmax(ep.AUPRC - sd.AUPRC, 0.6), ymax = pmin(ep.AUPRC + sd.AUPRC, 1), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3))  + ylim(0.6, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM-Wald"), values = c("red","pink")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -86,11 +86,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(ep.AUPRC - sd.AUPRC, 0.3), ymax = pmin(ep.AUPRC + sd.AUPRC, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3))  + ylim(0.3, 1) +
+    geom_errorbar(aes(ymin = pmax(ep.AUPRC - sd.AUPRC, 0.6), ymax = pmin(ep.AUPRC + sd.AUPRC, 1), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3))  + ylim(0.6, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM-Wald"), values = c("red","pink")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -117,11 +116,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(ep.AUPRC - sd.AUPRC, 0.3), ymax = pmin(ep.AUPRC + sd.AUPRC, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3))  + ylim(0.3, 1) +
+    geom_errorbar(aes(ymin = pmax(ep.AUPRC - sd.AUPRC, 0.6), ymax = pmin(ep.AUPRC + sd.AUPRC, 1), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3))  + ylim(0.6, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM-Wald"), values = c("red","pink")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -148,11 +146,10 @@
               position = position_dodge(width = 0.3)) +
     geom_point(size = 2,aes(color = Method), pch = 18,
                position = position_dodge(width = 0.3)) +
-    geom_errorbar(aes(ymin = pmax(ep.AUPRC - sd.AUPRC, 0.3), ymax = pmin(ep.AUPRC + sd.AUPRC, 1), color = Method), width = 0.3,
-                  position = position_dodge(width = 0.3))  + ylim(0.3, 1) +
+    geom_errorbar(aes(ymin = pmax(ep.AUPRC - sd.AUPRC, 0.6), ymax = pmin(ep.AUPRC + sd.AUPRC, 1), color = Method), width = 0.3,
+                  position = position_dodge(width = 0.3))  + ylim(0.6, 1) +
     scale_color_manual(
-      breaks = c("ANCOM-BC2","DESeq2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue",  "#DDA0DD","skyblue", "orange", "#4dac26","red")) +
+      breaks = c( "PALM", "PALM-Wald"), values = c("red","pink")) +
     theme_bw() +
     theme(panel.grid.major = element_line(colour = "grey", linetype = "dotted"),
           panel.grid.minor = element_blank(),
@@ -161,7 +158,7 @@
           panel.border = element_rect(colour = "black", fill=NA),
           axis.line = element_line(colour = "black"),
           panel.background = element_rect(fill = 'white'),
-          legend.position ="none",
+          legend.position ="bottom",
           legend.box="vertical",
           axis.text = element_text(size = 18),
           legend.title = element_blank(),
@@ -177,11 +174,11 @@
     ggpubr::ggarrange(p.large.fdr.species, p.large.fdr.genus, p.small.fdr.species, p.small.fdr.genus,
                       nrow = 1, ncol = 4,  common.legend = TRUE, legend = "none", label.y = "AUPRC"),
     bottom = ggpubr::text_grob("Proportion of differential AA features", size = 20, face = "bold"),
-    left = ggpubr::text_grob("FDR", size = 20, rot = 90, hjust = 0.2, face = "bold"),
+    left = ggpubr::text_grob("AUPRC", size = 20, rot = 90, hjust = 0.2, face = "bold"),
   )
 
 
-  pdf("./Figure/FigureS4_AUPRC.pdf", width = 21, height = 5.6, bg = "white")
+  pdf("./Figure/FigureS14.pdf", width = 21, height = 5.6, bg = "white")
 
   pp2_1
 

@@ -27,9 +27,15 @@
           }
         }
         tmp.prc <- data.frame(PRC_tmp) %>% group_by(method, Settings, tax.type, Study) %>%
-          summarize(FDR = mean(ep.fdr), sd.FDR = sd(ep.fdr),
-                    Power = mean(ep.power), sd.Power = sd(ep.power),
-                    het = mean(ep.het.fdr), sd.het = sd(ep.het.fdr))
+          summarize(FDR = mean(ep.fdr, na.rm = TRUE), sd.FDR = sd(ep.fdr, na.rm = TRUE),
+                    Power = mean(ep.power, na.rm = TRUE), sd.Power = sd(ep.power, na.rm = TRUE),
+                    het = mean(ep.het.fdr, na.rm = TRUE), sd.het = sd(ep.het.fdr, na.rm = TRUE),
+                    FDR.a = mean(ep.a.fdr, na.rm = TRUE), sd.FDR.a = sd(ep.a.fdr, na.rm = TRUE),
+                    Power.a = mean(ep.a.power, na.rm = TRUE), sd.Power.a = sd(ep.a.power, na.rm = TRUE),
+                    het.a = mean(ep.a.het.fdr, na.rm = TRUE), sd.het.a = sd(ep.a.het.fdr, na.rm = TRUE),
+                    FDR.l = mean(ep.l.fdr, na.rm = TRUE), sd.FDR.l = sd(ep.l.fdr, na.rm = TRUE),
+                    Power.l = mean(ep.l.power, na.rm = TRUE), sd.Power.l = sd(ep.l.power, na.rm = TRUE),
+                    het.l = mean(ep.l.het.fdr, na.rm = TRUE), sd.het.l = sd(ep.l.het.fdr, na.rm = TRUE))
         tmp.prc$x.label <- tag
         if(pos.lst == 0.5){
           tmp.prc$pos <- paste0("Balanced +/-")

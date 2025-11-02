@@ -95,7 +95,7 @@
   LMCLR_het_mat <- LMCLR.meta.pval.het %>% tibble::column_to_rownames(var = "feature")
   LMCLR.count <- colMeans(apply(LMCLR_het_mat, 2, p.adjust, method = "fdr") <= 0.1, na.rm = TRUE)
 
-  ## Maaslin2
+  ## MaAsLin2
   Maaslin2_het_mat <- Maaslin2.meta.pval.het %>% tibble::column_to_rownames(var = "feature")
   Maaslin2.count <- colMeans(apply(Maaslin2_het_mat, 2, p.adjust, method = "fdr") <= 0.1, na.rm = TRUE)
 

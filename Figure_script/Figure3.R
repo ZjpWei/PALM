@@ -16,57 +16,65 @@
                                      c(1, 10, 100, 1000) * 480.73,
                                      c(1, 10, 100, 1000) * 1.632,
                                      c(1, 10, 100, 1000) * 49.843,
+                                     c(1, 10, 100, 1000) * 864.600,
                                      c(1, 10, 100, 1000) * 18.657) / 60 / 60,
-  num_cov = rep(c(2, 3, 4, 5), 5),
+  num_cov = rep(c(2, 3, 4, 5), 6),
   Method = c(rep("ANCOM-BC2", 4),
              rep("MaAsLin2", 4),
              rep("LM-CLR", 4),
              rep("LinDA", 4),
+             rep("DESeq2", 4),
              rep("PALM", 4)),
-  dim = c(rep("species K = 401/large", 20)))
+  dim = c(rep("species K = 401/large", 24)))
 
   ## K = 401, small
   run_time_ls <- data.frame(time = c(c(1, 10, 100, 1000) * 19202.5,
                                      c(1, 10, 100, 1000) * 411.43,
                                      c(1, 10, 100, 1000) * 1.040,
                                      c(1, 10, 100, 1000) * 45.518,
+                                     c(1, 10, 100, 1000) * 696.170,
                                      c(1, 10, 100, 1000) * 12.521) / 60 / 60,
 
-  num_cov = rep(c(2, 3, 4, 5), 5),
+  num_cov = rep(c(2, 3, 4, 5), 6),
   Method = c(rep("ANCOM-BC2", 4),
              rep("MaAsLin2", 4),
              rep("LM-CLR", 4),
              rep("LinDA", 4),
+             rep("DESeq2", 4),
              rep("PALM", 4)),
-  dim = c(rep("species K = 401/small", 20)))
+  dim = c(rep("species K = 401/small", 24)))
 
   ## K = 92, large
   run_time_sl <- data.frame(time = c(c(1, 10, 100, 1000) * 4464.1,
                                   c(1, 10, 100, 1000) * 126.51,
                                   c(1, 10, 100, 1000) * 0.536,
                                   c(1, 10, 100, 1000) * 15.208,
+                                  c(1, 10, 100, 1000) * 506.55,
                                   c(1, 10, 100, 1000) * 6.253) / 60 / 60,
-  num_cov = rep(c(2, 3, 4, 5), 5),
+  num_cov = rep(c(2, 3, 4, 5), 6),
   Method = c(rep("ANCOM-BC2", 4),
              rep("MaAsLin2", 4),
              rep("LM-CLR", 4),
              rep("LinDA", 4),
+             rep("DESeq2", 4),
              rep("PALM", 4)),
-  dim = c(rep("species K = 92/large", 20)))
+  dim = c(rep("species K = 92/large", 24)))
 
   ## K = 92, small
   run_time_ss <- data.frame(time = c(c(1, 10, 100, 1000) * 4598.3,
                                      c(1, 10, 100, 1000) * 124.60,
                                      c(1, 10, 100, 1000) * 0.310,
                                      c(1, 10, 100, 1000) * 14.661,
+                                     c(1, 10, 100, 1000) * 460.250,
                                      c(1, 10, 100, 1000) * 2.943) / 60 / 60,
-  num_cov = rep(c(2, 3, 4, 5), 5),
+  num_cov = rep(c(2, 3, 4, 5), 6),
   Method = c(rep("ANCOM-BC2", 4),
              rep("MaAsLin2", 4),
              rep("LM-CLR", 4),
              rep("LinDA", 4),
+             rep("DESeq2", 4),
              rep("PALM", 4)),
-  dim = c(rep("genus K = 92/small", 20)))
+  dim = c(rep("genus K = 92/small", 24)))
 
 
   library("ggplot2")
@@ -79,8 +87,8 @@
     scale_x_continuous(breaks = 2:5,
                        labels = label_math(expr = 10^.x))  +
     scale_color_manual(
-      breaks = c("ANCOM-BC2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue", "skyblue", "orange", "#4dac26", "red")) +
+      breaks = c("ANCOM-BC2", "LinDA", "LM-CLR",  "MaAsLin2", "DESeq2","PALM"),
+      values = c("blue", "skyblue", "orange", "#4dac26", "#DDA0DD", "red")) +
     xlab("Number of covariates") +
     ylab("Time (hours)") +  coord_cartesian(ylim = c(0, 50), clip = "off") +  # Prevents truncation
     theme_bw() +
@@ -109,8 +117,8 @@
     scale_x_continuous(breaks = 2:5,
                        labels = label_math(expr = 10^.x))  +
     scale_color_manual(
-      breaks = c("ANCOM-BC2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue", "skyblue", "orange", "#4dac26", "red")) +
+      breaks = c("ANCOM-BC2", "LinDA", "LM-CLR",  "MaAsLin2", "DESeq2","PALM"),
+      values = c("blue", "skyblue", "orange", "#4dac26", "#DDA0DD", "red")) +
     xlab("Number of covariates") +
     ylab("Time (hours)") +  coord_cartesian(ylim = c(0, 50), clip = "off") +  # Prevents truncation
     theme_bw() +
@@ -140,8 +148,8 @@
     scale_x_continuous(breaks = 2:5,
                        labels = label_math(expr = 10^.x))  +
     scale_color_manual(
-      breaks = c("ANCOM-BC2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue", "skyblue", "orange", "#4dac26", "red")) +
+      breaks = c("ANCOM-BC2", "LinDA", "LM-CLR",  "MaAsLin2", "DESeq2","PALM"),
+      values = c("blue", "skyblue", "orange", "#4dac26", "#DDA0DD", "red")) +
     xlab("Number of covariates") +
     ylab("Time (hours)") +  coord_cartesian(ylim = c(0, 50), clip = "off") +  # Prevents truncation
     theme_bw() +
@@ -171,8 +179,8 @@
     scale_x_continuous(breaks = 2:5,
                        labels = label_math(expr = 10^.x))  +
     scale_color_manual(
-      breaks = c("ANCOM-BC2", "LinDA", "LM-CLR",  "MaAsLin2", "PALM"),
-      values = c("blue", "skyblue", "orange", "#4dac26", "red")) +
+      breaks = c("ANCOM-BC2", "LinDA", "LM-CLR",  "MaAsLin2", "DESeq2","PALM"),
+      values = c("blue", "skyblue", "orange", "#4dac26", "#DDA0DD", "red")) +
     xlab("Number of covariates") +
     ylab("Time (hours)") +  coord_cartesian(ylim = c(0, 50), clip = "off") +  # Prevents truncation
     theme_bw() +
