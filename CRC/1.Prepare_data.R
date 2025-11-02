@@ -36,7 +36,6 @@
   ## CRC4: France (CTR: 61, CRC: 52)
   ## CRC5: United States (CTR: 52, CRC: 51)
 
-  ## Batch-corrected by MMUPHin
   # CRC data K849 ----
   data.rel <- list()
   for(l in 1:length(study)){
