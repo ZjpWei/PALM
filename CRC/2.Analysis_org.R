@@ -10,6 +10,8 @@
   library('MicrobiomeStat')
   library('Maaslin2')
   library("PALM")
+  library("LOCOM")
+  library("DESeq2")
 
   # General ----
   rm(list = ls())
@@ -94,6 +96,58 @@
                              qval.het = p.adjust(tmp.pval, method = "fdr"))
 
   ANCOMBC2.model <- list(est = AA.est, var = AA.var)
+
+  ## DESeq2
+  ## DESeq2 with sensitivity score filter
+  AA.est <- matrix(NA, nrow = length(feature.ID), ncol = L,
+                   dimnames = list(feature.ID, as.character(1:L)))
+  AA.var <- matrix(NA, nrow = length(feature.ID), ncol = L,
+                   dimnames = list(feature.ID, as.character(1:L)))
+
+  for(l in 1:L){
+    objs <- DESeqDataSetFromMatrix(countData = feature.table[,meta.data$study == l],
+                                   colData = meta.data %>% dplyr::filter(study == l) %>%
+                                     dplyr::transmute(labels = labels),
+                                   design = ~ labels)
+
+    DESeq2.model <- DESeq(object = objs, sfType = "poscounts")
+
+    DESeq2.test <- results(DESeq2.model)
+
+    AA.est[rownames(DESeq2.test),l] <- DESeq2.test$log2FoldChange
+    AA.var[rownames(DESeq2.test),l] <- (DESeq2.test$lfcSE)^2
+  }
+
+  ## Calculate FDR
+  tmp.pval <- NULL
+  for(k in 1:nrow(AA.est)){
+    nonna.id <- !is.na(AA.est[k,])
+    if(sum(nonna.id) > 1){
+      m <- metafor::rma(yi = AA.est[k,nonna.id], vi = AA.var[k,nonna.id], method = "EE")
+      tmp.pval <- c(tmp.pval, m$QEp)
+    }else{
+      tmp.pval <- c(tmp.pval, NA)
+    }
+  }
+
+  ## Combined statistics
+  est.statics <- rowSums(AA.est / AA.var, na.rm = TRUE)
+  var.statics <- rowSums(1 / AA.var, na.rm = TRUE)
+  meta.coef <- est.statics / var.statics
+  meta.var <- 1 / var.statics
+  q.coef <- (meta.coef)^2 / meta.var
+  pval.sin <- 1 - pchisq(q.coef, df = 1)
+  qval.sin <- p.adjust(pval.sin, method = "fdr")
+
+  DESeq2.res <- data.frame(features = rownames(AA.est),
+                           est = meta.coef,
+                           stderr = sqrt(meta.var),
+                           pval = pval.sin,
+                           qval = qval.sin,
+                           pval.het = tmp.pval,
+                           qval.het = p.adjust(tmp.pval, method = "fdr"))
+
+  DESeq2.model <- list(est = AA.est, var = AA.var)
 
   ## MaAsLin2
   AA.est <- matrix(NA, nrow = length(feature.ID), ncol = L,
@@ -271,6 +325,60 @@
 
   Linda.model <- list(est = AA.est, var = AA.var)
 
+  ## DESeq2
+  ## DESeq2 with sensitivity score filter
+  AA.est <- matrix(NA, nrow = length(feature.ID), ncol = L,
+                   dimnames = list(feature.ID, as.character(1:L)))
+  AA.var <- matrix(NA, nrow = length(feature.ID), ncol = L,
+                   dimnames = list(feature.ID, as.character(1:L)))
+
+  ## DESeq2
+  for(l in 1:L){
+    objs <- DESeqDataSetFromMatrix(countData = feature.table[,meta.data$study == l],
+                                   colData = meta.data %>% dplyr::filter(study == l) %>%
+                                     dplyr::transmute(labels = labels),
+                                   design = ~ labels)
+
+    DESeq2.model <- DESeq(object = objs, sfType = "poscounts", minReplicatesForReplace = Inf)
+
+    DESeq2.test <- results(DESeq2.model, name = "labels_1_vs_0",
+                           independentFiltering = FALSE, cooksCutoff = FALSE)
+
+    AA.est[rownames(DESeq2.test),l] <- DESeq2.test$log2FoldChange
+    AA.var[rownames(DESeq2.test),l] <- (DESeq2.test$lfcSE)^2
+  }
+
+  ## Calculate FDR
+  tmp.pval <- NULL
+  for(k in 1:nrow(AA.est)){
+    nonna.id <- !is.na(AA.est[k,])
+    if(sum(nonna.id) > 1){
+      m <- metafor::rma(yi = AA.est[k,nonna.id], vi = AA.var[k,nonna.id], method = "EE")
+      tmp.pval <- c(tmp.pval, m$QEp)
+    }else{
+      tmp.pval <- c(tmp.pval, NA)
+    }
+  }
+
+  ## Combined statistics
+  est.statics <- rowSums(AA.est / AA.var, na.rm = TRUE)
+  var.statics <- rowSums(1 / AA.var, na.rm = TRUE)
+  meta.coef <- est.statics / var.statics
+  meta.var <- 1 / var.statics
+  q.coef <- (meta.coef)^2 / meta.var
+  pval.sin <- 1 - pchisq(q.coef, df = 1)
+  qval.sin <- p.adjust(pval.sin, method = "fdr")
+
+  DESeq2.res <- data.frame(features = rownames(AA.est),
+                           est = meta.coef,
+                           stderr = sqrt(meta.var),
+                           pval = pval.sin,
+                           qval = qval.sin,
+                           pval.het = tmp.pval,
+                           qval.het = p.adjust(tmp.pval, method = "fdr"))
+
+  DESeq2.model <- list(est = AA.est, var = AA.var)
+
   ## N form whole data
   load("./CRC/Processed_data/data.org.K849.Rdata")
   N <- list()
@@ -279,10 +387,10 @@
   }
 
   ## Meta-analysis
-  null_obj_RA <- palm.null.model(rel.abd = rel.abd, depth = N, prev.filter = 0)
+  null_obj_RA <- PALM::palm.null.model(rel.abd = rel.abd, depth = N, prev.filter = 0)
 
-  summary.score.RA <- palm.get.summary(null.obj = null_obj_RA,
-                                       covariate.interest = covariate.interest)
+  summary.score.RA <- PALM::palm.get.summary(null.obj = null_obj_RA,
+                                             covariate.interest = covariate.interest)
 
   ## original PALM corrected
   PALM.model <- palm.meta.summary(summary.stats = summary.score.RA, p.adjust.method = "fdr")
@@ -309,7 +417,7 @@
   PALM.model <- list(est = AA.est, var = AA.var)
 
   ## Save output
-  save(ANCOMBC2.model, lmclr.model, Maaslin2.model, Linda.model, PALM.model,
-       ANCOMBC2.res, lmclr.res, Maaslin2.res, Linda.res, PALM.res,
+  save(ANCOMBC2.model, lmclr.model, Maaslin2.model, Linda.model, PALM.model, DESeq2.model,
+       ANCOMBC2.res, lmclr.res, Maaslin2.res, Linda.res, PALM.res, DESeq2.res,
        file = "./CRC/Output/CRC_output.Rdata")
 
