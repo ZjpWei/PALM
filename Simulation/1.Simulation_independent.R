@@ -15,7 +15,10 @@
   ## Replicate number: integer range from 1 to 100
   ## Parameters
 
-  ep.fdr = ep.power = ep.het.fdr = S = method = batch_type = data_type = Study <- NULL
+  ep.fdr = ep.a.fdr = ep.l.fdr <- NULL
+  ep.power = ep.a.power = ep.l.power <- NULL
+  ep.het.fdr = ep.a.het.fdr = ep.l.het.fdr <- NULL
+  S = method = batch_type = data_type = Study <- NULL
   for(Setting in c("large", "small")){
     for(tax.type in c("species", "genus")){
 
@@ -291,6 +294,18 @@
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
       ep.het.fdr <- c(ep.het.fdr, mean(qval.het <= target.het.fdr, na.rm = TRUE))
 
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, mean(qval.het[signal.most.abund] <= target.het.fdr, na.rm = TRUE))
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, mean(qval.het[signal.less.abund] <= target.het.fdr, na.rm = TRUE))
+
       ## Align identity
       S <- c(S, s)
       batch_type <- c(batch_type, Setting)
@@ -362,6 +377,18 @@
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
       ep.het.fdr <- c(ep.het.fdr, mean(qval.het <= target.het.fdr, na.rm = TRUE))
 
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, mean(qval.het[signal.most.abund] <= target.het.fdr, na.rm = TRUE))
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, mean(qval.het[signal.less.abund] <= target.het.fdr, na.rm = TRUE))
+
       ## Align identity
       S <- c(S, s)
       batch_type <- c(batch_type, Setting)
@@ -418,6 +445,18 @@
       pval.sin <- 1 - pchisq(q.coef, df = 1)
       qval.sin <- p.adjust(pval.sin, method = "fdr")
       feature.ids <- rownames(AA.est)
+
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, mean(qval.het[signal.most.abund] <= target.het.fdr, na.rm = TRUE))
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, mean(qval.het[signal.less.abund] <= target.het.fdr, na.rm = TRUE))
 
       ## Calculate FDR
       pval.sin <- 1 - pchisq(q.coef, df = 1)
@@ -487,6 +526,18 @@
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
       ep.het.fdr <- c(ep.het.fdr, mean(qval.het <= target.het.fdr, na.rm = TRUE))
 
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, mean(qval.het[signal.most.abund] <= target.het.fdr, na.rm = TRUE))
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, mean(qval.het[signal.less.abund] <= target.het.fdr, na.rm = TRUE))
+
       ## Align identity
       S <- c(S, s)
       batch_type <- c(batch_type, Setting)
@@ -548,6 +599,18 @@
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
       ep.het.fdr <- c(ep.het.fdr, mean(qval.het <= target.het.fdr, na.rm = TRUE))
 
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, mean(qval.het[signal.most.abund] <= target.het.fdr, na.rm = TRUE))
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, mean(qval.het[signal.less.abund] <= target.het.fdr, na.rm = TRUE))
+
       ## Align identity
       S <- c(S, s)
       batch_type <- c(batch_type, Setting)
@@ -605,6 +668,18 @@
       ep.fdr <- c(ep.fdr, length(setdiff(select.feature, signal.names)) / length(select.feature))
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
       ep.het.fdr <- c(ep.het.fdr, mean(qval.het <= target.het.fdr, na.rm = TRUE))
+
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, mean(qval.het[signal.most.abund] <= target.het.fdr, na.rm = TRUE))
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr & !is.na(qval.sin)], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, mean(qval.het[signal.less.abund] <= target.het.fdr, na.rm = TRUE))
 
       ## Align identity
       S <- c(S, s)
@@ -800,6 +875,18 @@
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
       ep.het.fdr <- c(ep.het.fdr, NA)
 
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, NA)
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, NA)
+
       ## Align identity
       S <- c(S, s)
       batch_type <- c(batch_type, Setting)
@@ -862,6 +949,18 @@
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
       ep.het.fdr <- c(ep.het.fdr, NA)
 
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, NA)
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, NA)
+
       ## Align identity
       S <- c(S, s)
       batch_type <- c(batch_type, Setting)
@@ -886,6 +985,18 @@
       ep.fdr <- c(ep.fdr, length(setdiff(select.feature, signal.names)) / length(select.feature))
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
       ep.het.fdr <- c(ep.het.fdr, NA)
+
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, NA)
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, NA)
 
       ## Align identity
       S <- c(S, s)
@@ -915,6 +1026,18 @@
       ep.power <- c(ep.power, length(intersect(select.feature, signal.names)) / length(signal.names))
       ep.het.fdr <- c(ep.het.fdr, NA)
 
+      ## high abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr], signal.most.abund)
+      ep.a.fdr <- c(ep.a.fdr, length(setdiff(select.feature, signal.m.abd)) / length(select.feature))
+      ep.a.power <- c(ep.a.power, length(intersect(select.feature, signal.m.abd)) / length(signal.m.abd))
+      ep.a.het.fdr <- c(ep.a.het.fdr, NA)
+
+      ## low abd FDR
+      select.feature <- intersect(feature.ids[qval.sin <= target.fdr], signal.less.abund)
+      ep.l.fdr <- c(ep.l.fdr, length(setdiff(select.feature, signal.l.abd)) / length(select.feature))
+      ep.l.power <- c(ep.l.power, length(intersect(select.feature, signal.l.abd)) / length(signal.l.abd))
+      ep.l.het.fdr <- c(ep.l.het.fdr, NA)
+
       ## Align identity
       S <- c(S, s)
       batch_type <- c(batch_type, Setting)
@@ -925,6 +1048,8 @@
   }
 
   PRC <- data.frame(ep.fdr = ep.fdr, ep.power = ep.power, ep.het.fdr = ep.het.fdr,
+                    ep.a.fdr = ep.a.fdr, ep.a.power = ep.a.power, ep.a.het.fdr = ep.a.het.fdr,
+                    ep.l.fdr = ep.l.fdr, ep.l.power = ep.l.power, ep.l.het.fdr = ep.l.het.fdr,
                     S = S, method = method, Study, Settings = batch_type, tax.type = data_type)
 
   save(PRC, file = data.loc)
