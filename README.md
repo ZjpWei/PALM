@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project contains the analyses for the `PALM` paper. Please refer to the `README.md` file in each folder to reproduce the real data analysis, simulations, and figures.
+This project contains the analyses for the PALM paper. Please refer to the `README.md` file in each folder to reproduce the real data analyses, simulations, and figures. The `PALM` package version used for these analyses was 0.1.0, which can be installed via `PALM_0.1.0.tar.gz`.
 
 ## References
 
