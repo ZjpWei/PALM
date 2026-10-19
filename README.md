@@ -6,7 +6,7 @@ This project contains the analyses for the PALM paper. Please refer to the `READ
 
 ## References
 
-* Wei Z, Hong Q, Chen G, Hartert TV, Rosas-Salazar C, Das SR, Shilts MH, Levin AM, Tang ZZ. Fast and reliable association discovery in large-scale microbiome studies and meta-analyses using PALM. bioRxiv [Preprint]. 2026 Apr 10:2026.04.09.717497. doi: 10.64898/2026.04.09.717497. PMID: 41993272; PMCID: PMC13082055.
+* Wei Z, Hong Q, Chen G, Hartert TV, Rosas-Salazar C, Das SR, Shilts MH, Levin AM, Tang ZZ. **Fast and reliable association discovery in large-scale microbiome studies and meta-analyses using PALM**. bioRxiv [Preprint]. 2026 Apr 10:2026.04.09.717497. doi: 10.64898/2026.04.09.717497. PMID: 41993272; PMCID: PMC13082055.
 
 ## Contact
 
